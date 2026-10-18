@@ -5,8 +5,9 @@
 // demonstration passes declared in deployments/fx-corridor.json and, for each leg, reads the
 // transaction receipt on the public test network, then renders the state (block, EVM status,
 // target) with the explorer link and the business outcome of each pass: the conforming pass that
-// settled, and the refused pass where delivery to an unidentified beneficiary was refused with no
-// FX change.
+// settled (wrap, gated transfer and lock, swap and delivery at arrival, unwrap), the refusals made
+// at the source before any lock (the transaction REVERTS: status failed, zero logs), and the
+// residual case where an arrival refusal sends the value back to the payer.
 //
 // Read only. No build, no private key, no local node: it joins the public chains over JSON-RPC and
 // reports what is already settled there. This is layer 2 of the RUNBOOK (on-chain from the surface),
@@ -84,7 +85,22 @@ function assertions(p, l, rcpt) {
   const tr = transfers(rcpt);
   const fi = p.parties && p.parties.originatingFI && p.parties.originatingFI.address;
   const ben = p.parties && p.parties.beneficiaryFI && p.parties.beneficiaryFI.address;
-  if (l.phase === 'lock') {
+  if (l.phase === 'wrap') {
+    // Source chain: the originating FI deposits EURX and the wrapper mints the same amount of wEURX to it.
+    const w = (T.wEURX_PolicyWrapper || '').toLowerCase();
+    const want = toWei(p.amount_eurx);
+    const hit = tr.find((g) => g.address.toLowerCase() === w && g.topics[1] === pad('0x0') && g.topics[2] === pad(fi) && BigInt(g.data) === want);
+    out.push([!!hit, hit ? `wEURX minted to the originating FI: exactly ${p.amount_eurx}` : `no mint of exactly ${p.amount_eurx} wEURX to the originating FI`]);
+  } else if (l.phase === 'unwrap') {
+    // Arrival chain: the beneficiary FI burns the delivered wSGDX and receives the same amount of SGDX.
+    const w = (D.wSGDX_delivery_PolicyWrapper || '').toLowerCase();
+    const sgdx = (D.SGDX_delivery_TokenRep || '').toLowerCase();
+    const want = toWei(p.beneficiary_delta_sgdx);
+    const burnt = tr.find((g) => g.address.toLowerCase() === w && g.topics[1] === pad(ben) && g.topics[2] === pad('0x0') && BigInt(g.data) === want);
+    out.push([!!burnt, burnt ? `wSGDX burned by the beneficiary FI: exactly ${p.beneficiary_delta_sgdx}` : `no burn of exactly ${p.beneficiary_delta_sgdx} wSGDX by the beneficiary FI`]);
+    const got = tr.find((g) => g.address.toLowerCase() === sgdx && g.topics[2] === pad(ben) && BigInt(g.data) === want);
+    out.push([!!got, got ? 'the same amount of SGDX reaches the beneficiary FI' : 'no SGDX transfer to the beneficiary FI']);
+  } else if (l.phase === 'lock') {
     const w = (T.wEURX_PolicyWrapper || '').toLowerCase();
     const adapter = (T.SRC_ADAPTER_FX || '').toLowerCase();
     const hit = tr.find((g) => g.address.toLowerCase() === w && g.topics[1] === pad(fi) && g.topics[2] === pad(adapter));
@@ -132,7 +148,7 @@ function assertions(p, l, rcpt) {
       const touched = tr.some((g) => g.topics[1] === pad(direct) || g.topics[2] === pad(direct));
       out.push([!touched, !touched ? 'the direct pool did not move on route 1' : 'the direct pool moved on route 1']);
     }
-  } else {  // refused pass, or the refusal leg of a returned pass
+  } else if (l.phase === 'refuse') {  // arrival refusal: the call succeeds, the atomic swap is rolled back
     out.push([tr.length === 0, tr.length === 0 ? `0 token Transfer events: pool and beneficiary cannot have moved (${rcpt.logs.length} other events)` : `${tr.length} token Transfer events found in a refusal`]);
   }
   return out;
@@ -153,6 +169,17 @@ async function leg(l, p) {
     }
     const ok = rcpt.status === '0x1';
     const block = parseInt(rcpt.blockNumber, 16);
+    if (l.phase === 'expect_revert') {
+      // A refusal made before any movement: the transaction itself reverts, so it carries no log at all.
+      const good = !ok && rcpt.logs.length === 0;
+      const tgt = known.get((rcpt.to || '').toLowerCase());
+      console.log(`    [${l.phase}] ${c.name}  block ${block}  EVM status ${ok ? 'success' : 'failed'} (expected: failed)`);
+      console.log(`        to ${rcpt.to || '(contract creation)'}${tgt ? `  (corridor: ${tgt})` : ''}`);
+      console.log(`        ${l.what}`);
+      console.log(`        ${link}`);
+      console.log(`        ${good ? 'check ok ' : 'CHECK FAILED'}  ${good ? 'the transaction reverted with 0 logs: no token moved' : `status ${rcpt.status}, ${rcpt.logs.length} logs: not a clean revert`}`);
+      return good ? 'ok' : 'bad';
+    }
     const to = (rcpt.to || '').toLowerCase();
     const named = known.get(to);
     console.log(`    [${l.phase}] ${c.name}  block ${block}  EVM status ${ok ? 'success' : 'failed'}`);
@@ -183,6 +210,7 @@ async function pass(title, p) {
   if (p.rate_sgd_per_eur) console.log(`  applied rate: 1 EUR = ${p.rate_sgd_per_eur} SGD`);
   if (p.quote_sgd_per_eur) console.log(`  quote at send: 1 EUR = ${p.quote_sgd_per_eur} SGD (not applied, refused)`);
   if (p.reason) console.log(`  reason: ${p.reason}`);
+  if (p.amount_eurx) console.log(`  amount: ${p.amount_eurx} EURX`);
   console.log(`  beneficiary delta: +${p.beneficiary_delta_sgdx ?? 0} SGDX`);
   const states = [];
   for (const l of p.legs) states.push(await leg(l, p));
@@ -199,17 +227,24 @@ console.log('Programmable Compliance: FX cross-chain corridor EURX to SGDX');
 console.log('on-chain replay from the surface (read only, public test networks)');
 if (dp.note) console.log(`\n${dp.note}`);
 
-const states = [
-  ...(await pass('conforming pass', dp.conforming)),
-  ...(await pass('refused pass', dp.refused)),
-  ...(dp.pivot ? await pass('pivot pass (route 1)', dp.pivot) : []),
-  ...(dp.returned ? await pass('returned pass (refusal, then funds returned to the payer)', dp.returned) : []),
-];
+const TITLES = {
+  conforming: 'conforming pass',
+  refused: 'refused at the source (beneficiary without credential)',
+  refused_sanctions: 'refused at the source (sanctions proof)',
+  refused_replay: 'refused at the source (replay of a settled pass)',
+  refused_forged_proof: 'refused at the source (forged proof)',
+  returned: 'returned pass (arrival refusal, then funds returned to the payer)',
+};
+const states = [];
+for (const [key, p] of Object.entries(dp)) {
+  if (!p || typeof p !== 'object' || !p.legs) continue;
+  states.push(...(await pass(TITLES[key] || key, p)));
+}
 const count = (s) => states.filter((x) => x === s).length;
 
 console.log('\n-- summary --');
-console.log('  conforming: beneficiary received SGDX, FX change executed at the arrival pivot, gated delivery passed');
-console.log('  refused   : beneficiary received 0 SGDX, no FX change, value kept in transit; the gate held');
+console.log('  conforming: wrap, gated transfer and lock, swap at the arrival pivot, gated delivery, unwrap; the beneficiary received SGDX');
+console.log('  refused   : each refusal at the source reverted before any lock; the payer balance and the lock are unchanged');
 if (dp.returned) console.log('  returned  : the refused value went back through the bridge, the reserve was restored and the payer was made whole');
 console.log(`  receipts  : ${count('ok')} confirmed, ${count('bad')} not confirmed by the chain, ${count('down')} unverified (RPC unreachable)`);
 

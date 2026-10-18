@@ -97,6 +97,19 @@
   },
   {
     "type": "function",
+    "name": "beneficiaryGate",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "combineOptions",
     "inputs": [
       {
@@ -990,6 +1003,19 @@
   },
   {
     "type": "function",
+    "name": "setBeneficiaryGate",
+    "inputs": [
+      {
+        "name": "gate",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "setComposer",
     "inputs": [
       {
@@ -1108,6 +1134,38 @@
   },
   {
     "type": "function",
+    "name": "stageContext",
+    "inputs": [
+      {
+        "name": "context",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "stagedContextOf",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "token",
     "inputs": [],
     "outputs": [
@@ -1147,6 +1205,19 @@
   },
   {
     "type": "event",
+    "name": "BeneficiaryGateSet",
+    "inputs": [
+      {
+        "name": "gate",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "ComposerSet",
     "inputs": [
       {
@@ -1160,6 +1231,25 @@
         "type": "bool",
         "indexed": false,
         "internalType": "bool"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ContextStaged",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "contextHash",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
       }
     ],
     "anonymous": false

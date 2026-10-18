@@ -50,79 +50,94 @@ stablecoins on the legs are demonstration ERC-20 tokens, never central bank mone
 issued on a public chain. The same address string can denote different contracts on different chains:
 deployment is deterministic by deployer and nonce, and each tracker is read on its own chain id.
 
+### Compliance model of the corridor
+
+All compliance checks are made off-chain, before any transaction, by the node of each financial institution (FI):
+sanctions, customer due diligence, confirmation of the beneficiary. Each node signs its result. The Policy Wrapper
+does not query any identity registry: it only verifies, on-chain and before the wrapped token moves, the proofs
+carried by the transfer (signature, active key, binding to the leg, freshness, and a Groth16 non-membership proof
+for the public sanctions list). A proof is bound to one leg and one chain, so the proofs travel with the transfer
+from the source chain to the arrival chain and are verified again by the wrapper of each chain. The source adapter
+also verifies the arrival proofs before the debit (the beneficiary gate), so a transfer that the arrival chain
+would refuse is refused at the source, before any lock. The addresses of the verifiers and policies are in
+`deployments/fx-corridor.json`, under `source`, `destination` and `zk`.
+
 ### Replaying the FX corridor from the surface
 
-The FX cross-chain corridor (EURX to SGD, changed at the arrival pivot by a Uniswap V3 pool and gated
-by the Policy Wrapper) carries its two demonstration passes in `deployments/fx-corridor.json`, under
-`demonstration_passes`: the conforming pass that settled, and the refused pass where delivery to an
-unidentified beneficiary was refused with no FX change. A reader holding only this surface replays both
-end to end, reading each receipt live on the public RPC:
+The FX cross-chain corridor (EURX to SGD, changed at the arrival pivot by a Uniswap V3 pool and gated by the Policy
+Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, under `demonstration_passes`, all at
+1000 EURX:
+
+- `conforming`: wrap, gated transfer and lock at the source, swap and gated delivery at arrival, unwrap;
+- `refused`, `refused_sanctions`, `refused_replay`, `refused_forged_proof`: refusals made at the source, before any
+  lock. Each transaction reverts, so the proof of refusal is an EVM status of failed with no log, and balances equal
+  before and after;
+- `returned`: the residual case where the node key is revoked after signing, the arrival refuses, and the value goes
+  back to the payer.
+
+A reader holding only this surface replays them end to end, reading each receipt live on the public RPC:
 
 ```
 node scripts/demo/corridor-fx-e2e.mjs
 ```
 
-For each leg it prints the block, the EVM status, the transaction target cross-checked against a named
-corridor contract, and the explorer link, then the business outcome of each pass. It is read only: it
-joins the public chains, signs nothing and holds no key (point it at your own node with `--rpc-sepolia`
-and `--rpc-arbitrum` if you prefer the public endpoints not be used). Both arrival transactions carry
-EVM status success; the refusal is semantic, so the proof of refusal is the pair beneficiary receives 0
-SGDX and the pool is unchanged, not a reverted transaction.
+For each leg it prints the block, the EVM status, the transaction target cross-checked against a named corridor
+contract, the explorer link, and the token movements asserted from the receipt logs. It is read only: it joins the
+public chains, signs nothing and holds no key (point it at your own node with `--rpc-sepolia` and `--rpc-arbitrum`
+if you prefer the public endpoints not be used). The previous generation of the corridor (50 EURX passes, identity
+gated wrappers) is kept under `history` and is not replayed.
 
 ### Two exchange routes at arrival
 
 The arrival composer (`COMPOSER_ARBITRUM_FX` in `deployments/fx-corridor.json`) knows two routes, fixed in the
-contract: route 0 swaps EURX to SGDX in the direct pool, route 1 swaps EURX to USDX to SGDX through two pivot
-pools. The compose payload is `beneficiary(20) ++ minOut(32) ++ route(1) ++ attestedOut(32) ++ attestation`: the composer delivers exactly `attestedOut` and keeps any surplus, which the operator can sweep to a sink fixed at construction. A read-only agent quotes both routes on the chain and
-picks the higher SGDX output; the contract only accepts a route identifier, and the floor `minOut` applies to
-the final SGDX, so a wrong choice can only make the whole call fail. All pools hold base tokens (EURX, USDX,
-SGDX), never wrappers. USDX is a demonstration base token with no wrapper: it exists only inside the router
-call, and compliance applies to the transfer of the wrapped SGDX. The first two passes used the earlier
-single-route composer (`COMPOSER_ARBITRUM_FX_single_route`), and the pivot pass the two-route composer
-(`COMPOSER_ARBITRUM_FX_two_routes_v2`); both were unregistered from the arrival adapter on 2026-10-17, as was the very first composer
-(`COMPOSER_ARBITRUM_FX_first_composer`).
-`scripts/demo/corridor-fx-e2e.mjs` replays the route 1 pass (`demonstration_passes.pivot`) and checks that both
-pivot pools moved, that the direct pool did not, and that the composer never held USDX.
+contract: route 0 swaps EURX to SGDX in the direct pool, route 1 swaps EURX to USDX to SGDX through two pivot pools.
+The compose payload is `beneficiary(20) ++ minOut(32) ++ route(1) ++ maxOut(32) ++ attestation`. `minOut` and `maxOut`
+bound the SGDX delivered, and the arrival attestation is signed for that range: the composer delivers what the pool
+returned, capped at `maxOut`, and keeps any surplus above it in base SGDX, which the operator can sweep to a sink fixed
+at construction. A read-only agent quotes both routes and picks the higher SGDX output; the contract only accepts a
+route identifier, and the floor `minOut` applies to the final SGDX, so a wrong choice can only make the whole call
+fail. All pools hold base tokens (EURX, USDX, SGDX), never wrappers. USDX is a demonstration base token with no
+wrapper: it exists only inside the router call, and compliance applies to the transfer of the wrapped SGDX. At
+1000 EURX each pass moves the pool by a few basis points, so the rule switches between the two routes with the pool
+state. `scripts/demo/corridor-fx-e2e.mjs` checks, on a route 1 pass, that both pivot pools moved, that the direct pool
+did not, and that the composer never held USDX.
 
 To see which route the agent would pick right now, read-only:
 
 ```
-node scripts/demo/route-agent.mjs [--amount 50] [--tol-bps 30]
+node scripts/demo/route-agent.mjs [--amount 1000] [--tol-bps 30]
 ```
 
-It checks on the chain that the three tokens of the paths and the three pools are base tokens (it refuses
-if one is a wrapper), quotes both routes with the QuoterV2, and prints the choice with its reason, then a
-`GL1_FX_ROUTE={...}` line (route, attested output `attestedOut`, floor `minOut`). At the calibrated state the direct
-route wins by a fraction of a basis point: both routes start from the same USD-pivot reference, and the
-pivot pays one more fee. The choice only flips when a pool is unbalanced.
+It checks on the chain that the three tokens of the paths and the three pools are base tokens (it refuses if one is a
+wrapper), quotes both routes with the QuoterV2, and prints the choice with its reason, then a `GL1_FX_ROUTE={...}` line
+(route, quoted output, floor `minOut`).
 
 ### Returning a refused amount
 
-A refused delivery used to leave the wrapped EURX with the composer and no way out. The current composer
-(`COMPOSER_ARBITRUM_FX`) records each refusal by guid, with the original payer read from the compose message, and
-`returnToSource` sends the amount back through the bridge. Only the payer or the operator can call it, once per guid:
+The normal refusal happens at the source, before any lock, so nothing needs to come back. A refusal can still happen
+at arrival in a residual case: a proof valid when signed stops being valid before delivery (for example the signing key
+of a node is revoked in between). The composer then records the refusal by guid, with the original payer read from the
+compose message, and `returnToSource` sends the amount back through the bridge. Only the payer or the operator can
+call it, once per guid:
 
-1. the composer's wEURX goes to the arrival adapter and is burned there, and the reserve gets the same amount of EURX back
-   (this transfer passes through the arrival wrapper's compliance pipeline, like every other leg);
+1. the composer's wEURX goes to the arrival adapter and is burned there, and the reserve gets the same amount of EURX back;
 2. the adapter trace (`inboundComposer`, `inboundAmount`) is consumed, so a guid cannot be returned twice;
 3. on the source chain the lock is released and `RETURN_RECEIVER` hands the wEURX back to the payer by a gated transfer.
-   If the source policy refuses (for example an expired attestation), the wEURX stays with the receiver and a `pending`
-   entry is settled by `claim` with a fresh attestation: no funds sit in a compose queue.
+   If the source policy refuses, the wEURX stays with the receiver and a `pending` entry is settled by `claim` with a
+   fresh attestation: no funds sit in a compose queue.
 
 `scripts/demo/corridor-fx-e2e.mjs` replays this pass (`demonstration_passes.returned`) and checks that exactly the
-refused amount left the composer, was burned, came back to the reserve and reached the payer. Two older composers
-hold wEURX recorded before this path existed; their code has no approve or transfer, so that stock stays in place,
-backed by the wrapper's EURX.
+refused amount left the composer, was burned, came back to the reserve and reached the payer.
 
-Gas on the source chain matters: a return needs `lzReceive` gas of about 920,000 (a 500,000 cap dies with an empty
-revert) and the compose step a few million; the sender script uses 1,500,000 and 6,000,000.
+Gas on the source chain matters: a return needs `lzReceive` gas of about 920,000 and the compose step a few million;
+the enforced options of the adapters carry the values (see `wiring`).
 
-`scripts/demo/wiring-check.mjs` now also replays the `ComposerSet` events of each adapter and requires the set of
+`scripts/demo/wiring-check.mjs` also replays the `ComposerSet` events of each adapter and requires the set of
 registered composers to equal the announced list in `deployments/fx-corridor.json`.
 
 ### Checking the pinned LayerZero pathway
 
-Since 2026-10-16 the pathway of the FX corridor is set by the application on both chains: explicit send and
+The pathway of the FX corridor is set by the application on both chains: explicit send and
 receive libraries, ULN config (2 confirmations, one required DVN), executor, and enforced gas options. Before,
 only the peer was set and everything else ran on the LayerZero defaults. The expected values are in
 `deployments/fx-corridor.json`, under `wiring`. To read them back from the chains:

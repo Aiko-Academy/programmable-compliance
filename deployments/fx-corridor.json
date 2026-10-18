@@ -1,6 +1,10 @@
 {
   "corridor": "FX cross-chain EURX -> SGDX (change reel au pivot d'arrivee par Uniswap V3)",
   "deployed": "2026-10-14",
+  "generation": {
+    "date": "2026-10-18",
+    "note": "Second generation of the corridor contracts. The previous generation (2026-10-14 to 2026-10-17) is kept under \"history\" and is not replayed. Compliance model of this generation: every check (sanctions, customer due diligence, beneficiary confirmation) is made OFF-CHAIN by each financial institution node, which signs the result; the Policy Wrapper only verifies the proofs carried by the transfer, on-chain, before the wrapped token moves. There is no on-chain identity registry and no identity policy. Proofs are bound to a leg and a chain, so a proof set travels with the transfer from one chain to the other."
+  },
   "note": "OFT EURX DEDIE au corridor FX (couple d'adapters propre) ; le corridor 1:1 des traceurs 11155111.json / 421614.json reste intact. Le change se fait a la destination dans le composeur, gate par la conformite. TokenRep de demonstration, PAS de monnaie de banque centrale.",
   "reference_fx": {
     "pair": "EUR/SGD",
@@ -11,18 +15,15 @@
   "calibration": {
     "microstructure": "calquee EURC/USDC : pool neuf au palier 0,01 % initialise au prix de reference, liquidite CONCENTREE +/- 100 bps [-3953, -3753], fournie par les LP USUELS LP1 et LP2 (pas un self-mint deployeur)",
     "pool_EURX_SGDX_fee100": "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
-    "COMPOSER_ARBITRUM_FX_fee100": "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4",
+    "COMPOSER_ARBITRUM_FX_fee100": "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
     "LP1": "0x3210D96762DCb8c579057C03F4A8A5c198CABaBe",
     "LP2": "0xd1820e080BE28D5FC639DdC7Ee8CC59366C4d1e6",
-    "superseded": {
-      "pool_fee500_fullrange_deployer": "0xa91d98A26f95bF7fF71a1A50CF2cBFeFc7F5D8c4 (prix herite 1.558, pleine plage, auto-finance : premiere demo seulement)",
-      "composer_fee500": "0xB017626c462D8e81e6512Ead7F2b30C3A1A2Fb92"
-    },
     "pivot_pools": {
       "note": "route 1 (USD pivot): EURX/USDX and SGDX/USDX pools at the 0.01% tier, concentrated +/-100 bps, liquidity from the two usual LPs, at the USD-pivot reference price. USDX is a demonstration base token with no wrapper: it exists only inside the router call and the composer never holds it.",
       "EUR_USD": 1.1600672375,
       "USD_SGD": 1.267129
-    }
+    },
+    "depth_2026_10_18": "demonstration passes are 1000 EURX; the pool depth was raised for that size (about 72,000 EURX against 95,000 SGDX at the time of the passes). Each pass moves the pool by a few basis points; the route rule switches between direct and USD pivot with the pool state."
   },
   "source": {
     "chainId": 11155111,
@@ -30,12 +31,17 @@
     "eid": 40161,
     "contracts": {
       "EURX_TokenRep": "0x9731D7b334612e71cf79D3bD37b5e94499cBa818",
-      "wEURX_PolicyWrapper": "0x3D546A7Df13581d46F3cDF6d19A19241d23Dc54a",
-      "SRC_ADAPTER_FX": "0x6f291E30A53366888F2A74673B7c4B7305c7D059",
-      "AtelierIdentityGatedPolicy": "0xFAb1730f5569FdaEAeCef4b231a5A50F80944a63",
-      "TestSeal": "0x958286a08a640cFAB82736EB9e2b6e2a83E66Db1",
-      "RETURN_RECEIVER": "0xeCD17DCe61F0d62452a8add68241b093E1b243fb",
-      "RETURN_RECEIVER_v3_unregistered": "0x4e6d56d8f40B06fE3dF48B271328Cbed1aeBF983"
+      "wEURX_PolicyWrapper": "0x738DE4A03a18891e07Ff001323cA4d150d4B2C84",
+      "SRC_ADAPTER_FX": "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
+      "RETURN_RECEIVER": "0xf17029e6129C3dAc1DE2663f3e8761ef45FE6Cc4",
+      "TestSeal": "0x8b924387CB4425B5Bf171AC3235EBfFB670B9Db0",
+      "ERC20TransferExtractor": "0x7828990979591e8A0fCBf5EBc62270Ca6dbc5F1C",
+      "AtelierPolicyManager": "0x9b4Abe496A3F387d2D7723915844C9bEF96C7a26",
+      "AtelierRequiredChecksPolicy": "0x650139Ae7041EB5f1ecaE9FfeA9fEDab6f4cCaeC",
+      "AtelierEnvelopeBindingPolicy": "0xB00C6179b72B5D47FaB2B0839d16c122F08E3627",
+      "TestAttestationValidatorPolicy": "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4",
+      "BeneficiaryGate": "0xE833f363AbB0f601eA3d0Fcbb871C1cC589f236B",
+      "AtelierZkSanctionsWrapperPolicy": "0xE01A715f3C9bF529f50d93561ec9Ac369fe53376"
     }
   },
   "destination": {
@@ -44,21 +50,22 @@
     "eid": 40231,
     "contracts": {
       "EURX_reception_TokenRep": "0x939731bADd5c55070f563CD0a5293e835586C91F",
-      "wEURX_reception_PolicyWrapper": "0xA9bE00A49057a1AD5Ac16a4c610dD4434260F765",
-      "RECV_ADAPTER_EUR": "0xf0d5648dbc06d78476B56b6EF124408E3ef5e189",
+      "wEURX_reception_PolicyWrapper": "0x85711D76479fcB145Fa98de4322CA361b129BAe0",
+      "RECV_ADAPTER_EUR": "0xbC2060BE78E637E16cD09a856dF2eE2534A59a80",
       "SGDX_delivery_TokenRep": "0x48660bD73791264D1cED1b3451e313a85d58c15b",
-      "wSGDX_delivery_PolicyWrapper": "0x50Ac4aa1A067DfB22f56F61E04AC048d6Ea1f2dE",
+      "wSGDX_delivery_PolicyWrapper": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
       "pool_EURX_SGDX": "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
-      "COMPOSER_ARBITRUM_FX": "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4",
-      "COMPOSER_ARBITRUM_FX_v3_return_path": "0xe3A33643Eef095FB9894b2A7C600C5005cB392fa",
-      "AtelierIdentityGatedPolicy": "0x9DA5cC7BCC0C0236d46004bF4e0952C09252bf20",
-      "TestSeal": "0xFAb1730f5569FdaEAeCef4b231a5A50F80944a63",
-      "COMPOSER_ARBITRUM_FX_single_route": "0x6eAA1d03fb6D1E9AAC3524a88eB6BB34Beb275DF",
+      "COMPOSER_ARBITRUM_FX": "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+      "TestSeal": "0x50656CE806dC4cC840cF1f849063a02427526FB1",
       "USDX_pivot_TokenRep": "0xb8d6E96387e099f91CD972d9fDEb16F804A45ac0",
       "pool_EURX_USDX": "0x179F7c1d4B351303f487A86340B0911ACd41A0c3",
       "pool_SGDX_USDX": "0x3D7C07FA75E7FdD5d9b019Ad45102e0f11B5D9d9",
-      "COMPOSER_ARBITRUM_FX_two_routes_v2": "0xd10E2bE83F8dAEb25d568E8f850Ec95222DE5511",
-      "COMPOSER_ARBITRUM_FX_first_composer": "0xB017626c462D8e81e6512Ead7F2b30C3A1A2Fb92"
+      "ERC20TransferExtractor": "0x164d1B0bB4a878827b2Df525e0192EE01a5F2ad3",
+      "AtelierPolicyManager": "0x21AD6DC26A2F727A7b329cEB1279Ffe64e2AC269",
+      "AtelierRequiredChecksPolicy": "0x125EbDCF73B39a8fb28DC49024d34083FC9eC9f3",
+      "AtelierEnvelopeBindingPolicy": "0x481f3a553F5481553A6a8dA1D5708A4c91f9aD78",
+      "TestAttestationValidatorPolicy": "0x73f7587bed5c0988dBA9513e61CACa2016edD98e",
+      "AtelierZkSanctionsWrapperPolicy": "0xF06E68B2ba0596b6b5aceaf14A73e2df46D51057"
     },
     "uniswapV3Canonical": {
       "UniswapV3Factory": "0x248AB79Bbb9bC29bB72f7Cd42F17e054Fc40188e",
@@ -70,170 +77,226 @@
   "lzEndpointV2": "0x6EDCE65403992e310A62460808c4b910D972f10f",
   "pairing": "SRC_ADAPTER_FX.peers(40231) = RECV_ADAPTER_EUR ; RECV_ADAPTER_EUR.peers(40161) = SRC_ADAPTER_FX (verifie on-chain)",
   "demonstration_passes": {
-    "note": "Live testnet transactions of the two demonstration passes, replayed on 2026-10-16 AFTER the LayerZero pathway was pinned (see 'wiring'), each between two named demonstration VASPs. This is data, not a reproducibility claim; it is replayed by scripts/demo/corridor-fx-e2e.mjs, which reads each receipt on the public RPC and renders its state. Both arrival transactions carry EVM status success: the refusal is semantic (the composer rolls the swap back and keeps the value in transit), not a reverted transaction. Party names (BANK FR, BANK SG1, BANK SG2) are demonstration labels for identified financial institutions, not central bank entities.",
+    "note": "Live testnet transactions of the demonstration passes of the second generation, played on 2026-10-18 at 1000 EURX between named demonstration financial institutions (FI FR, FI SG1, FI SG2: demonstration labels, not central bank entities). This is data, not a reproducibility claim; it is replayed by scripts/demo/corridor-fx-e2e.mjs, which reads each receipt on the public RPC and checks the token movements. Refusals made at the source are transactions that REVERT: the replay expects EVM status failed and zero logs, and the balances read before and after are identical. Refusals made at arrival (the swap is rolled back by the atomic call) succeed at EVM level and carry no token transfer.",
     "conforming": {
       "outcome": "settled",
-      "rate_sgd_per_eur": 1.46977,
-      "beneficiary_delta_sgdx": "73.488515937196838132",
+      "route": 1,
+      "amount_eurx": "1000",
+      "rate_sgd_per_eur": 1.4690879188252595,
+      "beneficiary_delta_sgdx": "1469.087918825259334223",
+      "gap_to_reference_bps": -5.9,
       "parties": {
         "originatingFI": {
-          "name": "BANK FR",
+          "name": "FI FR",
           "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
-          "role": "pays EUR, identified on Ethereum Sepolia (vLEI + KYB)"
+          "role": "pays EUR on Ethereum Sepolia"
         },
         "beneficiaryFI": {
-          "name": "BANK SG1",
+          "name": "FI SG1",
           "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
-          "role": "receives SGD, identified on Arbitrum Sepolia (vLEI + KYB)"
+          "role": "receives SGD, node signed the arrival attestation"
         }
       },
       "legs": [
         {
           "chainId": 11155111,
+          "phase": "wrap",
+          "tx": "0x5f184ea77ef9ce3d5418a7bb4ac054bc3c51ac8779ad96377d9415904fcad1b3",
+          "what": "FI FR wraps 1000 EURX into wEURX (Policy Wrapper, deposit)"
+        },
+        {
+          "chainId": 11155111,
           "phase": "lock",
-          "tx": "0x0d3ef4b92e090b7f960a13a5518b4a41783cc612b9168cbf004284678ecdebeb",
-          "what": "50 EURX locked at source by BANK FR; the source adapter holds 50 EURX; message verified by the pinned LayerZero Labs DVN (LayerZero Scan: DELIVERED)"
+          "tx": "0x01ac4af70b90e90b394c10c355185e94d8d3b84ece75cda875dcd504995fa409",
+          "what": "transferFrom payer to the source adapter, gated by the wrapper policy chain (required checks, leg binding, attestation validator, sanctions non-membership proof); the adapter unwraps and locks 1000 EURX; the beneficiary gate checked the arrival proofs BEFORE the debit"
         },
         {
           "chainId": 421614,
           "phase": "swap+deliver",
-          "tx": "0xc04792fb39fbfdffb944f30a1ce9571c84a2dab3de71684f63c9fded136620c4",
-          "what": "atomic lzCompose: swap 50 EURX to 73.488516 SGDX at 1.46977 SGD/EUR, then gated delivery to BANK SG1 (vLEI verified); reserve EURX released, composer keeps nothing"
+          "tx": "0x31b943e92d0d8fc1e340ed966502813edc8b1ee0b26e3210939aeb2711abf891",
+          "what": "atomic lzCompose on route 1 (USD pivot): wEURX unwrapped, 1000 EURX swapped through both pivot pools, SGDX wrapped, wSGDX delivered to FI SG1 under the wrapper policy chain; the composer never holds USDX"
+        },
+        {
+          "chainId": 421614,
+          "phase": "unwrap",
+          "tx": "0x5380b3a172b4d9de220bf92fdcffcf8c875e9bb79c1ea6a72ee9eb62d76ba8bb",
+          "what": "FI SG1 unwraps the delivered wSGDX into SGDX"
         }
-      ]
+      ],
+      "sanctions": "both parties proven absent from the public sanctions list SAN01 by a Groth16 non-membership proof, verified on-chain by the wrapper policy of each chain"
     },
     "refused": {
       "outcome": "refused",
-      "quote_sgd_per_eur": 1.46977,
+      "amount_eurx": "1000",
       "beneficiary_delta_sgdx": "0",
-      "reason": "beneficiary BANK SG2 not identified on Arbitrum (no vLEI/KYB credential, getIdentity = 0); gated delivery refused by the identity-gated policy",
+      "reason": "beneficiary FI SG2 has no credential: its node refuses to sign, so no attestation exists and no transaction is emitted. A third party presenting the attestation of another beneficiary is refused by the beneficiary gate before any lock.",
       "parties": {
         "originatingFI": {
-          "name": "BANK FR",
+          "name": "FI FR",
           "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
-          "role": "pays EUR, source conforming"
+          "role": "pays EUR on Ethereum Sepolia"
         },
         "beneficiaryFI": {
-          "name": "BANK SG2",
+          "name": "FI SG2",
           "address": "0x96495854Da659fa8e75781bbd1D4767721eff401",
-          "role": "attempts to receive SGD, not identified on Arbitrum"
+          "role": "attempts to receive SGD, unknown to its institution node"
         }
       },
       "legs": [
         {
           "chainId": 11155111,
-          "phase": "lock",
-          "tx": "0x05ffa595b57a1246c6c6719c4c1788718f66c32ac7defba7a950581e0e11b0d0",
-          "what": "50 EURX locked at source by BANK FR; beneficiary BANK SG2 is not identified"
-        },
-        {
-          "chainId": 421614,
-          "phase": "refuse",
-          "tx": "0xbb1591e4db1c885a44c2158cf7c430d80ba4e4ab2fda955092a158c02572aa6a",
-          "what": "gated delivery refused ('IdentityGatedPolicy: beneficiary has no identity'); the swap is rolled back by the atomic call; the Uniswap V3 pool is unchanged (balances identical before and after); value kept in transit as 50 wEURX in its origin currency; BANK SG2 receives 0 SGDX; the receipt carries zero token transfers"
+          "phase": "expect_revert",
+          "tx": "0x9323a3ab4f5e472e0fd7d0de57e112807532005081d63662913fc422f376bea0",
+          "what": "send reverted with ProofNotBound(customer-due-diligence): the attestation is bound to another beneficiary; nothing was locked, balances identical before and after"
         }
       ]
     },
-    "pivot": {
-      "outcome": "settled",
-      "route": 1,
-      "rate_sgd_per_eur": 1.469632025869,
-      "beneficiary_delta_sgdx": "73.481601293450141716",
-      "note": "Route 1 forced for the demonstration (at the calibrated state the direct route is better by under one basis point, so the agent would choose route 0). Pool moves read from the receipt: EURX/USDX +50 EURX and -57.997059 USDX, SGDX/USDX +57.997059 USDX and -73.481601 SGDX, direct pool unchanged, composer holds no USDX.",
+    "refused_sanctions": {
+      "outcome": "refused",
+      "amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "a listed identifier has no non-membership proof (the prover exits with code 3); a proof made for another identifier is refused by the source wrapper at the gated transfer (ProofInvalid from the Groth16 verifier)",
       "parties": {
         "originatingFI": {
-          "name": "BANK FR",
+          "name": "FI FR",
           "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
-          "role": "pays EUR, identified on Ethereum Sepolia (vLEI + KYB)"
+          "role": "pays EUR on Ethereum Sepolia"
         },
         "beneficiaryFI": {
-          "name": "BANK SG1",
+          "name": "FI SG1",
           "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
-          "role": "receives SGD, identified on Arbitrum Sepolia (vLEI + KYB)"
+          "role": "would receive SGD"
         }
       },
       "legs": [
         {
           "chainId": 11155111,
-          "phase": "lock",
-          "tx": "0x6704f8c7b80988c8c4b2b05e5abc10a6c41ff3ce5a9b20aba7596d6dc949d789",
-          "what": "50 EURX locked at source by BANK FR; message verified by the pinned LayerZero Labs DVN (LayerZero Scan: DELIVERED)"
+          "phase": "expect_revert",
+          "tx": "0x20df734e7ca8c48f7cbe4b80f150ce694779a4c52429b86052ae2de4cbacb8b8",
+          "what": "transfer reverted: ZkSanctionsWrapperPolicy rejects the sanctions proof; nothing was locked"
+        }
+      ]
+    },
+    "refused_replay": {
+      "outcome": "refused",
+      "amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "the same pass (same uetr, parties and amount) replayed after it settled is refused: the leg binding is single use",
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia"
         },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "would receive SGD"
+        }
+      },
+      "legs": [
         {
-          "chainId": 421614,
-          "phase": "swap+deliver",
-          "tx": "0x15ff29bdaac9fcd393a66b00ca784660ffc23d56d5d37828f966469c8317e5ce",
-          "what": "atomic lzCompose on route 1: swap 50 EURX to USDX to 73.481601 SGDX through the two pivot pools, then gated delivery to BANK SG1 (vLEI verified); the composer keeps nothing"
+          "chainId": 11155111,
+          "phase": "expect_revert",
+          "tx": "0x901c47fe62005ff5305b33df849f4c263fe7e02081898857952bbb1094d2e0e6",
+          "what": "transfer reverted: LegBindingPolicy proof already used; nothing was locked"
+        }
+      ]
+    },
+    "refused_forged_proof": {
+      "outcome": "refused",
+      "amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "one bit of the payer sanctions proof is flipped: the Groth16 verifier rejects it and the source wrapper refuses the transfer; the cost of the refusal is bounded by the verifier adapter gas cap",
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "would receive SGD"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "expect_revert",
+          "tx": "0xd05233e6f395dc10c786a635ef8aa0bbffbb10931dfcbcfc18b203a565077723",
+          "what": "transfer reverted: ZkSanctionsWrapperPolicy rejects the altered proof; nothing was locked"
         }
       ]
     },
     "returned": {
       "outcome": "returned",
-      "returned_amount_eurx": "50",
-      "reason": "beneficiary BANK SG2 not identified on Arbitrum: the gated delivery is refused, the 50 wEURX stay with the composer, are recorded by guid with the original payer, then sent back through the bridge: burned at arrival (the reserve gets its EURX back), the source lock is released and the return receiver hands the wEURX back to the payer",
+      "amount_eurx": "1000",
+      "returned_amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "residual case: the node key that signed the arrival attestation is revoked at the arrival seal AFTER signing and before delivery (the propagation window of a key revocation). The gated delivery is refused, the 1000 wEURX stay with the composer, are recorded by guid with the payer, and are sent back through the bridge: burned at arrival (the reserve gets its EURX back), the source lock is released and the return receiver hands the wEURX back to the payer.",
       "parties": {
         "originatingFI": {
-          "name": "BANK FR",
+          "name": "FI FR",
           "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
-          "role": "pays EUR, source conforming; made whole after the refusal"
+          "role": "pays EUR on Ethereum Sepolia"
         },
         "beneficiaryFI": {
-          "name": "BANK SG2",
-          "address": "0x96495854Da659fa8e75781bbd1D4767721eff401",
-          "role": "attempts to receive SGD, not identified on Arbitrum"
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "would receive SGD; its node key is revoked after signing"
         }
       },
       "legs": [
         {
+          "chainId": 421614,
+          "phase": "revoke-key",
+          "tx": "0x443018972d3ccb4aa68e133a6c355b919c4b69a5db5e371358d686f377ebb02c",
+          "what": "the node key is revoked at the arrival attestation seal"
+        },
+        {
           "chainId": 11155111,
           "phase": "lock",
-          "tx": "0x7313279d1c3c3a6e7faabd7625239c99fa16750ab8933a9c9217b06702ed6362",
-          "what": "50 wEURX locked at source by BANK FR; beneficiary BANK SG2 is not identified"
+          "tx": "0xdc07e77c4bf5cf2e2e79c5295563514376b4b147ae7dd96c5df2471751f3cc24",
+          "what": "1000 EURX locked at source under the gated transfer"
         },
         {
           "chainId": 421614,
           "phase": "refuse",
-          "tx": "0x731212e06c7ddd6d3e15e38663a7ddc7dbcbdecb4f0c0530e70c8403c94a5527",
-          "what": "gated delivery refused; the swap is rolled back; the refusal is recorded by guid with the original payer; the receipt carries zero token transfers"
+          "tx": "0x3a5a479bd47d237f67d65aece72e22ab9fb541ccbb6b5e68d10a5caa02591dd4",
+          "what": "delivery refused by the arrival attestation validator (attestation not authentic); the swap is rolled back; the value stays in transit as 1000 wEURX at the composer; the receipt carries zero token transfers"
+        },
+        {
+          "chainId": 421614,
+          "phase": "restore-key",
+          "tx": "0xb62369ce270b78446e433608837e917df354cd989cac2642163fc1c66f7f44ae",
+          "what": "the node key is restored at the seal"
         },
         {
           "chainId": 421614,
           "phase": "return",
-          "tx": "0x88773388fc5689676d43577a8ea44598308daf6ac33783d3c0b78b9a75d0b1ae",
-          "what": "returnToSource by the operator: the composer's 50 wEURX go to the adapter and are burned, the reserve gets 50 EURX back, the adapter trace is consumed"
+          "tx": "0x85ab5e01256bd2be4a9c46b1c92db29622b442abf86dc133c8d315b5aa5768ad",
+          "what": "returnToSource: the composer 1000 wEURX go to the arrival adapter and are burned, the reserve gets 1000 EURX back"
         },
         {
           "chainId": 11155111,
           "phase": "credit-payer",
-          "tx": "0x5dd25608c4c518f8e2330cb4178cfb08b7f690372b642d3bccd61f9bcc0f3851",
-          "what": "the return receiver hands 50 wEURX back to BANK FR by a gated transfer; the source lock was released by the LayerZero delivery"
+          "tx": "0xbdabff9add8b6bdb92894902fe5a0b323003d34d4031e8bee1f7a7e89ff89560",
+          "what": "the source lock is released by the LayerZero delivery and the return receiver hands 1000 wEURX back to FI FR by a gated transfer"
         }
       ],
-      "state_read_on": "2026-10-17T13:05:15Z",
-      "note": "Not recoverable by this path: two older composers (0xB017...: 50 wEURX, 0x6eAA...: 100 wEURX) hold wEURX recorded before the return path existed; their code has no approve or transfer, so that stock stays in place, backed by the wrapper's EURX."
-    }
-  },
-  "earlier_passes_default_wiring": {
-    "note": "The two passes of 2026-10-14, played before the pathway was pinned (the corridor then ran on the LayerZero default libraries and defaults). Kept as history; not replayed.",
-    "conforming": {
-      "send": "0x630e7e17d727fc858153f615854d88d24848da92de0437da1199a8fce1407037",
-      "swap_deliver": "0x9d43507091a67731fe1dcaecce8f2ce560a6adb13e5f6ae8b358a71c1986746b",
-      "beneficiary_delta_sgdx": "73.489588053033904009"
-    },
-    "refused": {
-      "send": "0x789cd3d54f975b53662279237978eea0bc82724277446f2bafc41f181edd88d9",
-      "refuse": "0x18be69b039f9fb3fe043ce1f4957b256a8cc4099a63ccc05c51b58698919666a"
+      "guid": "0xe25843847cbbde6e549c4afbbd70b3274a08de3a7710c46dd44a5f4775d610bd"
     }
   },
   "wiring": {
-    "note": "LayerZero pathway of the FX corridor, pinned explicitly on 2026-10-16 (all six steps of the OFT wiring list on both chains). Values equal what was already effective, so behaviour did not change; they are now set by the application instead of inherited. Replayed read-only by scripts/demo/wiring-check.mjs; set by scripts/wiring/WireLZ.s.sol. Enforced options ADD to the caller's options, so the sender passes none.",
-    "read_on": "2026-10-16",
+    "note": "LayerZero pathway of the FX corridor, pinned by the application on both chains (all six steps of the OFT wiring list). Re-applied to the second-generation adapters on 2026-10-18; the library, DVN, executor and gas values are unchanged. Replayed read-only by scripts/demo/wiring-check.mjs; set by scripts/wiring/WireLZ.s.sol. Enforced options ADD to the caller's options, so the sender passes none.",
+    "read_on": "2026-10-18",
     "source": {
       "chainId": 11155111,
       "eid": 40161,
-      "adapter": "0x6f291E30A53366888F2A74673B7c4B7305c7D059",
+      "adapter": "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
       "remoteEid": 40231,
-      "remoteAdapter": "0xf0d5648dbc06d78476B56b6EF124408E3ef5e189",
+      "remoteAdapter": "0xbC2060BE78E637E16cD09a856dF2eE2534A59a80",
       "sendLibrary": "0xcc1ae8Cf5D3904Cef3360A9532B477529b177cCE",
       "receiveLibrary": "0xdAf00F5eE2158dD58E0d3857851c432E34A3A851",
       "executor": "0x718B92b5CB0a5552039B593faF724D182A881eDA",
@@ -251,23 +314,23 @@
         "SEND_AND_CALL": "0x0003010011010000000000000000000000000007a1200100130300000000000000000000000000000044aa20"
       },
       "composers": [
-        "0xeCD17DCe61F0d62452a8add68241b093E1b243fb"
+        "0xf17029e6129C3dAc1DE2663f3e8761ef45FE6Cc4"
       ],
       "composersFromBlock": 11935064,
       "composersRetired": {
-        "on": "2026-10-17",
+        "on": "2026-10-18",
         "composers": [
           "0x4e6d56d8f40B06fE3dF48B271328Cbed1aeBF983"
         ],
-        "note": "the return receiver bound to the v3 composer, unregistered by setComposer(false) and removed from the identity gate exemptions once the v4 composer and its own receiver were in service"
+        "note": "return receivers of earlier generations; the second-generation adapters start with an empty set and register only the current return receiver"
       }
     },
     "destination": {
       "chainId": 421614,
       "eid": 40231,
-      "adapter": "0xf0d5648dbc06d78476B56b6EF124408E3ef5e189",
+      "adapter": "0xbC2060BE78E637E16cD09a856dF2eE2534A59a80",
       "remoteEid": 40161,
-      "remoteAdapter": "0x6f291E30A53366888F2A74673B7c4B7305c7D059",
+      "remoteAdapter": "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
       "sendLibrary": "0x4f7cd4DA19ABB31b0eC98b9066B9e857B1bf9C0E",
       "receiveLibrary": "0x75Db67CDab2824970131D5aa9CECfC9F69c69636",
       "executor": "0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897",
@@ -285,44 +348,43 @@
         "SEND_AND_CALL": "0x"
       },
       "composers": [
-        "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4"
+        "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a"
       ],
       "composersFromBlock": 320119792,
       "composersRetired": {
-        "on": "2026-10-17",
+        "on": "2026-10-18",
         "composers": [
-          "0xd10E2bE83F8dAEb25d568E8f850Ec95222DE5511",
-          "0x6eAA1d03fB6D1E9AAC3524a88eB6BB34Beb275DF",
           "0xB017626c462D8e81e6512Ead7F2b30C3A1A2Fb92",
-          "0xe3A33643Eef095FB9894b2A7C600C5005cB392fa"
+          "0x6eAA1d03fb6D1E9AAC3524a88eB6BB34Beb275DF",
+          "0xd10E2bE83F8dAEb25d568E8f850Ec95222DE5511",
+          "0xe3A33643Eef095FB9894b2A7C600C5005cB392fa",
+          "0x0d3857608634A15a6c92b4947A9BE6e3e858fe9E"
         ],
-        "note": "unregistered by setComposer(false) once a newer composer replaced them (the first three on 2026-10-17 at 15:10 UTC, the v3 return-path composer at 16:46 UTC); the wEURX the first three already held has no way out, their code has no approve or transfer. The v3 composer held no wEURX when it was unregistered: its two refused amounts had been returned to the source."
+        "note": "composers of earlier generations, unregistered from the previous arrival adapter. The second-generation arrival adapter registers only the current composer."
       }
     }
   },
   "zk": {
+    "circuit": "sanctions-non-membership-v1",
+    "status": "Live. Groth16 (BN254) non-membership proofs of the public sanctions list SAN01 (demonstration list, demonstration setup) are verified on-chain by the universal ZK sanctions policy installed on the wrappers. The proof travels in the same attestation array as the signed checks (kind 2, code sanctions-zkp-public); each proof is bound to its leg and its chain.",
     "source": {
       "chainId": 11155111,
-      "ZkCheckRegistry": "0x82A9062DE85432652FBdDC2E023e4b7d561a840F",
-      "SanctionsGroth16Verifier": "0xb4B1e7bd8A0A5023c5B88eAB0C27F249bF7ffC13",
-      "SanctionsAdapter": "0x1AF6F7BCFA70451E2695b85FEc82149397d759AF",
-      "HolderKycGroth16Verifier": "0x4b6dF6fEA328Fe83Bd5B58D9209Dd66f207d162C",
-      "HolderKycAdapter": "0x34Fa7DA47244014c110FaEa73699B7A70aB0108e"
+      "SanctionsRootRegistry": "0xf3E3218B2E7d17d84F02537C80F57578253CbfBC",
+      "GnarkSanctionsAdapter": "0xc96236393530cDF4F54F20C6BB02160Bec3Fa1ee",
+      "SanctionsNonMembershipVerifier": "0x6952Fcd2A6421aF320167433BccA4D8299ff36ED",
+      "ZkSanctionsWrapperPolicy": "0xE01A715f3C9bF529f50d93561ec9Ac369fe53376"
     },
     "destination": {
       "chainId": 421614,
-      "ZkCheckRegistry": "0x486b374C51fAEe2FcA9f8A7c29A41C09cb4993a0",
-      "SanctionsGroth16Verifier": "0x04B756cd2Bd433f75b0D099fE7B62358ADf448c1",
-      "SanctionsAdapter": "0xE189F54aB553665ad7041877CF7e7164b5e0116b",
-      "HolderKycGroth16Verifier": "0x00C2266243744790C31532fB1fff1C9b1502c46f",
-      "HolderKycAdapter": "0x117b1cBEe8e3e262014b49fAC6A321e1B322c29b"
+      "SanctionsRootRegistry": "0x68A4a9172e4858BA8cF2fb714EcEB7CEf1528C44",
+      "GnarkSanctionsAdapter": "0x7918B97EbDdA55b65Bfb0224BBc65a0Fab8f1519",
+      "ZkSanctionsWrapperPolicy": "0xF06E68B2ba0596b6b5aceaf14A73e2df46D51057"
     },
-    "status": "Verifiers and registries are deployed on both testnets and read back on-chain (verifierOf of the two codes) on 2026-10-17. NO live proof: no prover exists in this repository, the corridor keeps running on signed attestations."
+    "listId": "keccak256(\"demo-sanctions-v1\")"
   },
   "routes": {
-    "note": "The arrival composer knows two exchange routes, FIXED in the contract. The compose payload is beneficiary(20) ++ minOut(32) ++ route(1) ++ attestedOut(32) ++ attestation. attestedOut is the SGDX amount the quote attested; the composer delivers EXACTLY attestedOut to the beneficiary, keeps any surplus the swap produced above it, and the operator can sweep that surplus to a sink fixed at construction. A read-only route agent quotes both routes on the chain and picks the higher SGDX output (tie: direct); the contract only accepts a route identifier, and minOut applies to the final SGDX, so a wrong choice can only make the whole call fail. All three pools hold base tokens, never wrappers; compliance applies to the transfer of the wrapped SGDX.",
-    "composer": "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4",
-    "single_route_composer_used_by_the_first_passes": "0x6eAA1d03fb6D1E9AAC3524a88eB6BB34Beb275DF",
+    "note": "The arrival composer knows two exchange routes, FIXED in the contract. The compose payload is beneficiary(20) ++ minOut(32) ++ route(1) ++ maxOut(32) ++ attestation. minOut and maxOut bound the SGDX delivered: the attestation is bound to that signed range, not to an exact amount. The composer delivers what the pool returned, capped at maxOut, and keeps any surplus above it in base SGDX; the operator can sweep that surplus to a sink fixed at construction. A read-only route agent quotes both routes on the chain and picks the higher SGDX output (tie: direct); the contract only accepts a route identifier, and minOut applies to the final SGDX, so a wrong choice can only make the whole call fail. All three pools hold base tokens, never wrappers; compliance applies to the transfer of the wrapped SGDX. At 1000 EURX the pool drifts with each pass (a few basis points), and the agent rule switches between the direct and the pivot route accordingly.",
+    "composer": "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
     "route_0": {
       "path": "EURX to SGDX",
       "pools": [
@@ -335,6 +397,286 @@
         "0x179F7c1d4B351303f487A86340B0911ACd41A0c3",
         "0x3D7C07FA75E7FdD5d9b019Ad45102e0f11B5D9d9"
       ]
+    }
+  },
+  "history": {
+    "note": "Previous generation (2026-10-14 to 2026-10-17, 50 EURX passes, identity-gated wrappers, earlier adapters and composers). Superseded on 2026-10-18; kept as history, not replayed. The contracts remain on the chains.",
+    "source_contracts": {
+      "EURX_TokenRep": "0x9731D7b334612e71cf79D3bD37b5e94499cBa818",
+      "wEURX_PolicyWrapper": "0x3D546A7Df13581d46F3cDF6d19A19241d23Dc54a",
+      "SRC_ADAPTER_FX": "0x6f291E30A53366888F2A74673B7c4B7305c7D059",
+      "AtelierIdentityGatedPolicy": "0xFAb1730f5569FdaEAeCef4b231a5A50F80944a63",
+      "TestSeal": "0x958286a08a640cFAB82736EB9e2b6e2a83E66Db1",
+      "RETURN_RECEIVER": "0xeCD17DCe61F0d62452a8add68241b093E1b243fb",
+      "RETURN_RECEIVER_v3_unregistered": "0x4e6d56d8f40B06fE3dF48B271328Cbed1aeBF983"
+    },
+    "destination_contracts": {
+      "EURX_reception_TokenRep": "0x939731bADd5c55070f563CD0a5293e835586C91F",
+      "wEURX_reception_PolicyWrapper": "0xA9bE00A49057a1AD5Ac16a4c610dD4434260F765",
+      "RECV_ADAPTER_EUR": "0xf0d5648dbc06d78476B56b6EF124408E3ef5e189",
+      "SGDX_delivery_TokenRep": "0x48660bD73791264D1cED1b3451e313a85d58c15b",
+      "wSGDX_delivery_PolicyWrapper": "0x50Ac4aa1A067DfB22f56F61E04AC048d6Ea1f2dE",
+      "pool_EURX_SGDX": "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
+      "COMPOSER_ARBITRUM_FX": "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4",
+      "COMPOSER_ARBITRUM_FX_v3_return_path": "0xe3A33643Eef095FB9894b2A7C600C5005cB392fa",
+      "AtelierIdentityGatedPolicy": "0x9DA5cC7BCC0C0236d46004bF4e0952C09252bf20",
+      "TestSeal": "0xFAb1730f5569FdaEAeCef4b231a5A50F80944a63",
+      "COMPOSER_ARBITRUM_FX_single_route": "0x6eAA1d03fb6D1E9AAC3524a88eB6BB34Beb275DF",
+      "USDX_pivot_TokenRep": "0xb8d6E96387e099f91CD972d9fDEb16F804A45ac0",
+      "pool_EURX_USDX": "0x179F7c1d4B351303f487A86340B0911ACd41A0c3",
+      "pool_SGDX_USDX": "0x3D7C07FA75E7FdD5d9b019Ad45102e0f11B5D9d9",
+      "COMPOSER_ARBITRUM_FX_two_routes_v2": "0xd10E2bE83F8dAEb25d568E8f850Ec95222DE5511",
+      "COMPOSER_ARBITRUM_FX_first_composer": "0xB017626c462D8e81e6512Ead7F2b30C3A1A2Fb92"
+    },
+    "wiring": {
+      "note": "LayerZero pathway of the FX corridor, pinned explicitly on 2026-10-16 (all six steps of the OFT wiring list on both chains). Values equal what was already effective, so behaviour did not change; they are now set by the application instead of inherited. Replayed read-only by scripts/demo/wiring-check.mjs; set by scripts/wiring/WireLZ.s.sol. Enforced options ADD to the caller's options, so the sender passes none.",
+      "read_on": "2026-10-16",
+      "source": {
+        "chainId": 11155111,
+        "eid": 40161,
+        "adapter": "0x6f291E30A53366888F2A74673B7c4B7305c7D059",
+        "remoteEid": 40231,
+        "remoteAdapter": "0xf0d5648dbc06d78476B56b6EF124408E3ef5e189",
+        "sendLibrary": "0xcc1ae8Cf5D3904Cef3360A9532B477529b177cCE",
+        "receiveLibrary": "0xdAf00F5eE2158dD58E0d3857851c432E34A3A851",
+        "executor": "0x718B92b5CB0a5552039B593faF724D182A881eDA",
+        "maxMessageSize": 10000,
+        "confirmations": 2,
+        "requiredDVNs": [
+          "0x8eebf8b423B73bFCa51a1Db4B7354AA0bFCA9193"
+        ],
+        "requiredDVNNames": [
+          "LayerZero Labs"
+        ],
+        "optionalDVNs": [],
+        "enforcedOptions": {
+          "SEND": "0x0003010011010000000000000000000000000007a120",
+          "SEND_AND_CALL": "0x0003010011010000000000000000000000000007a1200100130300000000000000000000000000000044aa20"
+        },
+        "composers": [
+          "0xeCD17DCe61F0d62452a8add68241b093E1b243fb"
+        ],
+        "composersFromBlock": 11935064,
+        "composersRetired": {
+          "on": "2026-10-17",
+          "composers": [
+            "0x4e6d56d8f40B06fE3dF48B271328Cbed1aeBF983"
+          ],
+          "note": "the return receiver bound to the v3 composer, unregistered by setComposer(false) and removed from the identity gate exemptions once the v4 composer and its own receiver were in service"
+        }
+      },
+      "destination": {
+        "chainId": 421614,
+        "eid": 40231,
+        "adapter": "0xf0d5648dbc06d78476B56b6EF124408E3ef5e189",
+        "remoteEid": 40161,
+        "remoteAdapter": "0x6f291E30A53366888F2A74673B7c4B7305c7D059",
+        "sendLibrary": "0x4f7cd4DA19ABB31b0eC98b9066B9e857B1bf9C0E",
+        "receiveLibrary": "0x75Db67CDab2824970131D5aa9CECfC9F69c69636",
+        "executor": "0x5Df3a1cEbBD9c8BA7F8dF51Fd632A9aef8308897",
+        "maxMessageSize": 10000,
+        "confirmations": 2,
+        "requiredDVNs": [
+          "0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8"
+        ],
+        "requiredDVNNames": [
+          "LayerZero Labs"
+        ],
+        "optionalDVNs": [],
+        "enforcedOptions": {
+          "SEND": "0x0003010011010000000000000000000000000007a120",
+          "SEND_AND_CALL": "0x"
+        },
+        "composers": [
+          "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4"
+        ],
+        "composersFromBlock": 320119792,
+        "composersRetired": {
+          "on": "2026-10-17",
+          "composers": [
+            "0xd10E2bE83F8dAEb25d568E8f850Ec95222DE5511",
+            "0x6eAA1d03fb6D1E9AAC3524a88eB6BB34Beb275DF",
+            "0xB017626c462D8e81e6512Ead7F2b30C3A1A2Fb92",
+            "0xe3A33643Eef095FB9894b2A7C600C5005cB392fa"
+          ],
+          "note": "unregistered by setComposer(false) once a newer composer replaced them (the first three on 2026-10-17 at 15:10 UTC, the v3 return-path composer at 16:46 UTC); the wEURX the first three already held has no way out, their code has no approve or transfer. The v3 composer held no wEURX when it was unregistered: its two refused amounts had been returned to the source."
+        }
+      }
+    },
+    "zk_unused_verifiers": {
+      "source": {
+        "chainId": 11155111,
+        "ZkCheckRegistry": "0x82A9062DE85432652FBdDC2E023e4b7d561a840F",
+        "SanctionsGroth16Verifier": "0xb4B1e7bd8A0A5023c5B88eAB0C27F249bF7ffC13",
+        "SanctionsAdapter": "0x1AF6F7BCFA70451E2695b85FEc82149397d759AF",
+        "HolderKycGroth16Verifier": "0x4b6dF6fEA328Fe83Bd5B58D9209Dd66f207d162C",
+        "HolderKycAdapter": "0x34Fa7DA47244014c110FaEa73699B7A70aB0108e"
+      },
+      "destination": {
+        "chainId": 421614,
+        "ZkCheckRegistry": "0x486b374C51fAEe2FcA9f8A7c29A41C09cb4993a0",
+        "SanctionsGroth16Verifier": "0x04B756cd2Bd433f75b0D099fE7B62358ADf448c1",
+        "SanctionsAdapter": "0xE189F54aB553665ad7041877CF7e7164b5e0116b",
+        "HolderKycGroth16Verifier": "0x00C2266243744790C31532fB1fff1C9b1502c46f",
+        "HolderKycAdapter": "0x117b1cBEe8e3e262014b49fAC6A321e1B322c29b"
+      },
+      "status": "Verifiers and registries are deployed on both testnets and read back on-chain (verifierOf of the two codes) on 2026-10-17. NO live proof: no prover exists in this repository, the corridor keeps running on signed attestations."
+    },
+    "demonstration_passes": {
+      "note": "Live testnet transactions of the two demonstration passes, replayed on 2026-10-16 AFTER the LayerZero pathway was pinned (see 'wiring'), each between two named demonstration VASPs. This is data, not a reproducibility claim; it is replayed by scripts/demo/corridor-fx-e2e.mjs, which reads each receipt on the public RPC and renders its state. Both arrival transactions carry EVM status success: the refusal is semantic (the composer rolls the swap back and keeps the value in transit), not a reverted transaction. Party names (FI FR, FI SG1, FI SG2) are demonstration labels for identified financial institutions, not central bank entities.",
+      "conforming": {
+        "outcome": "settled",
+        "rate_sgd_per_eur": 1.46977,
+        "beneficiary_delta_sgdx": "73.488515937196838132",
+        "parties": {
+          "originatingFI": {
+            "name": "FI FR",
+            "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+            "role": "pays EUR, identified on Ethereum Sepolia (vLEI + KYB)"
+          },
+          "beneficiaryFI": {
+            "name": "FI SG1",
+            "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+            "role": "receives SGD, identified on Arbitrum Sepolia (vLEI + KYB)"
+          }
+        },
+        "legs": [
+          {
+            "chainId": 11155111,
+            "phase": "lock",
+            "tx": "0x0d3ef4b92e090b7f960a13a5518b4a41783cc612b9168cbf004284678ecdebeb",
+            "what": "50 EURX locked at source by FI FR; the source adapter holds 50 EURX; message verified by the pinned LayerZero Labs DVN (LayerZero Scan: DELIVERED)"
+          },
+          {
+            "chainId": 421614,
+            "phase": "swap+deliver",
+            "tx": "0xc04792fb39fbfdffb944f30a1ce9571c84a2dab3de71684f63c9fded136620c4",
+            "what": "atomic lzCompose: swap 50 EURX to 73.488516 SGDX at 1.46977 SGD/EUR, then gated delivery to FI SG1 (vLEI verified); reserve EURX released, composer keeps nothing"
+          }
+        ]
+      },
+      "refused": {
+        "outcome": "refused",
+        "quote_sgd_per_eur": 1.46977,
+        "beneficiary_delta_sgdx": "0",
+        "reason": "beneficiary FI SG2 not identified on Arbitrum (no vLEI/KYB credential, getIdentity = 0); gated delivery refused by the identity-gated policy",
+        "parties": {
+          "originatingFI": {
+            "name": "FI FR",
+            "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+            "role": "pays EUR, source conforming"
+          },
+          "beneficiaryFI": {
+            "name": "FI SG2",
+            "address": "0x96495854Da659fa8e75781bbd1D4767721eff401",
+            "role": "attempts to receive SGD, not identified on Arbitrum"
+          }
+        },
+        "legs": [
+          {
+            "chainId": 11155111,
+            "phase": "lock",
+            "tx": "0x05ffa595b57a1246c6c6719c4c1788718f66c32ac7defba7a950581e0e11b0d0",
+            "what": "50 EURX locked at source by FI FR; beneficiary FI SG2 is not identified"
+          },
+          {
+            "chainId": 421614,
+            "phase": "refuse",
+            "tx": "0xbb1591e4db1c885a44c2158cf7c430d80ba4e4ab2fda955092a158c02572aa6a",
+            "what": "gated delivery refused ('IdentityGatedPolicy: beneficiary has no identity'); the swap is rolled back by the atomic call; the Uniswap V3 pool is unchanged (balances identical before and after); value kept in transit as 50 wEURX in its origin currency; FI SG2 receives 0 SGDX; the receipt carries zero token transfers"
+          }
+        ]
+      },
+      "pivot": {
+        "outcome": "settled",
+        "route": 1,
+        "rate_sgd_per_eur": 1.469632025869,
+        "beneficiary_delta_sgdx": "73.481601293450141716",
+        "note": "Route 1 forced for the demonstration (at the calibrated state the direct route is better by under one basis point, so the agent would choose route 0). Pool moves read from the receipt: EURX/USDX +50 EURX and -57.997059 USDX, SGDX/USDX +57.997059 USDX and -73.481601 SGDX, direct pool unchanged, composer holds no USDX.",
+        "parties": {
+          "originatingFI": {
+            "name": "FI FR",
+            "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+            "role": "pays EUR, identified on Ethereum Sepolia (vLEI + KYB)"
+          },
+          "beneficiaryFI": {
+            "name": "FI SG1",
+            "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+            "role": "receives SGD, identified on Arbitrum Sepolia (vLEI + KYB)"
+          }
+        },
+        "legs": [
+          {
+            "chainId": 11155111,
+            "phase": "lock",
+            "tx": "0x6704f8c7b80988c8c4b2b05e5abc10a6c41ff3ce5a9b20aba7596d6dc949d789",
+            "what": "50 EURX locked at source by FI FR; message verified by the pinned LayerZero Labs DVN (LayerZero Scan: DELIVERED)"
+          },
+          {
+            "chainId": 421614,
+            "phase": "swap+deliver",
+            "tx": "0x15ff29bdaac9fcd393a66b00ca784660ffc23d56d5d37828f966469c8317e5ce",
+            "what": "atomic lzCompose on route 1: swap 50 EURX to USDX to 73.481601 SGDX through the two pivot pools, then gated delivery to FI SG1 (vLEI verified); the composer keeps nothing"
+          }
+        ]
+      },
+      "returned": {
+        "outcome": "returned",
+        "returned_amount_eurx": "50",
+        "reason": "beneficiary FI SG2 not identified on Arbitrum: the gated delivery is refused, the 50 wEURX stay with the composer, are recorded by guid with the original payer, then sent back through the bridge: burned at arrival (the reserve gets its EURX back), the source lock is released and the return receiver hands the wEURX back to the payer",
+        "parties": {
+          "originatingFI": {
+            "name": "FI FR",
+            "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+            "role": "pays EUR, source conforming; made whole after the refusal"
+          },
+          "beneficiaryFI": {
+            "name": "FI SG2",
+            "address": "0x96495854Da659fa8e75781bbd1D4767721eff401",
+            "role": "attempts to receive SGD, not identified on Arbitrum"
+          }
+        },
+        "legs": [
+          {
+            "chainId": 11155111,
+            "phase": "lock",
+            "tx": "0x7313279d1c3c3a6e7faabd7625239c99fa16750ab8933a9c9217b06702ed6362",
+            "what": "50 wEURX locked at source by FI FR; beneficiary FI SG2 is not identified"
+          },
+          {
+            "chainId": 421614,
+            "phase": "refuse",
+            "tx": "0x731212e06c7ddd6d3e15e38663a7ddc7dbcbdecb4f0c0530e70c8403c94a5527",
+            "what": "gated delivery refused; the swap is rolled back; the refusal is recorded by guid with the original payer; the receipt carries zero token transfers"
+          },
+          {
+            "chainId": 421614,
+            "phase": "return",
+            "tx": "0x88773388fc5689676d43577a8ea44598308daf6ac33783d3c0b78b9a75d0b1ae",
+            "what": "returnToSource by the operator: the composer's 50 wEURX go to the adapter and are burned, the reserve gets 50 EURX back, the adapter trace is consumed"
+          },
+          {
+            "chainId": 11155111,
+            "phase": "credit-payer",
+            "tx": "0x5dd25608c4c518f8e2330cb4178cfb08b7f690372b642d3bccd61f9bcc0f3851",
+            "what": "the return receiver hands 50 wEURX back to FI FR by a gated transfer; the source lock was released by the LayerZero delivery"
+          }
+        ],
+        "state_read_on": "2026-10-17T13:05:15Z",
+        "note": "Not recoverable by this path: two older composers (0xB017...: 50 wEURX, 0x6eAA...: 100 wEURX) hold wEURX recorded before the return path existed; their code has no approve or transfer, so that stock stays in place, backed by the wrapper's EURX."
+      }
+    },
+    "earlier_passes_default_wiring": {
+      "note": "The two passes of 2026-10-14, played before the pathway was pinned (the corridor then ran on the LayerZero default libraries and defaults). Kept as history; not replayed.",
+      "conforming": {
+        "send": "0x630e7e17d727fc858153f615854d88d24848da92de0437da1199a8fce1407037",
+        "swap_deliver": "0x9d43507091a67731fe1dcaecce8f2ce560a6adb13e5f6ae8b358a71c1986746b",
+        "beneficiary_delta_sgdx": "73.489588053033904009"
+      },
+      "refused": {
+        "send": "0x789cd3d54f975b53662279237978eea0bc82724277446f2bafc41f181edd88d9",
+        "refuse": "0x18be69b039f9fb3fe043ce1f4957b256a8cc4099a63ccc05c51b58698919666a"
+      }
     }
   }
 }

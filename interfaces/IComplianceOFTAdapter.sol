@@ -17,6 +17,7 @@ interface IComplianceOFTAdapter {
     function inboundAmount(bytes32 guid) external view returns (uint256);
     function composePayloadFor(address beneficiary, bytes calldata attestation) external pure returns (bytes memory);
     function recordDelivery(bytes32 guid, address beneficiary, uint256 amountLD) external;
+    function stageContext(bytes calldata context) external;
     function underlyingToken() external view returns (address);
     /// @dev Le retour des fonds refuses passe par le pont : le composeur renvoie son wEURX a la source.
     function send(SendParam calldata sendParam, MessagingFee calldata fee, address refundAddress)
