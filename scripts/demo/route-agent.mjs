@@ -57,13 +57,26 @@ const SEL = {
 
 let id = 0;
 async function ethCall(to, data) {
-  const res = await fetch(RPC, {
-    method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: ++id, method: 'eth_call', params: [{ to, data }, TAG] }),
-  });
-  const j = await res.json();
-  if (j.error) { const e = new Error(j.error.message); e.revert = true; throw e; }
-  return j.result;
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(RPC, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: ++id, method: 'eth_call', params: [{ to, data }, TAG] }),
+    });
+    const j = await res.json().catch(() => ({ error: { message: `HTTP ${res.status}` } }));
+    // a throttled endpoint is asked again; it is neither a revert nor an answer
+    if (res.status === 429 || /rate limit|too many requests|capacity/i.test(j.error?.message || '')) {
+      if (attempt >= 6) throw new Error(`endpoint throttled: ${j.error?.message || 'HTTP 429'}`);
+      await new Promise((r) => setTimeout(r, 1500 * attempt));
+      continue;
+    }
+    // only an execution revert means "no quote"; a node that cannot serve the block is a fault, not a revert
+    if (j.error) {
+      const e = new Error(j.error.message);
+      e.revert = j.error.code === 3 || /revert/i.test(j.error.message || '');
+      throw e;
+    }
+    return j.result;
+  }
 }
 const word = (x) => BigInt(x).toString(16).padStart(64, '0');
 const addr = (a) => word(a);

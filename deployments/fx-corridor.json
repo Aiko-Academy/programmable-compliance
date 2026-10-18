@@ -77,7 +77,7 @@
   "lzEndpointV2": "0x6EDCE65403992e310A62460808c4b910D972f10f",
   "pairing": "SRC_ADAPTER_FX.peers(40231) = RECV_ADAPTER_EUR ; RECV_ADAPTER_EUR.peers(40161) = SRC_ADAPTER_FX (verifie on-chain)",
   "demonstration_passes": {
-    "note": "Live testnet transactions of the demonstration passes of the second generation, played on 2026-10-18 at 1000 EURX between named demonstration financial institutions (FI FR, FI SG1, FI SG2: demonstration labels, not central bank entities). This is data, not a reproducibility claim; it is replayed by scripts/demo/corridor-fx-e2e.mjs, which reads each receipt on the public RPC and checks the token movements. Refusals made at the source are transactions that REVERT: the replay expects EVM status failed and zero logs, and the balances read before and after are identical. Refusals made at arrival (the swap is rolled back by the atomic call) succeed at EVM level and carry no token transfer.",
+    "note": "Live testnet transactions of the demonstration passes of the second generation, played on 2026-10-18 at 1000 EURX between named demonstration financial institutions (FI FR, FI SG1, FI SG2: demonstration labels, not central bank entities). This is data, not a reproducibility claim; it is verified by scripts/demo/corridor-fx-e2e.mjs, which reads each receipt on the public RPC, checks the token movements, the LayerZero guid from the source lock to the arrival, the completed policy runs and the route rule. Refusals made at the source are transactions that REVERT: the script expects EVM status failed, replays each call at the block before to read the error (selector, policy, message) and compare it with the `expected_revert` of the leg, and reads the balances of the payer and of the lock before and after. Refusals made at arrival (the swap is rolled back by the atomic call) succeed at EVM level and carry no token transfer.",
     "conforming": {
       "outcome": "settled",
       "route": 1,
@@ -129,7 +129,7 @@
       "outcome": "refused",
       "amount_eurx": "1000",
       "beneficiary_delta_sgdx": "0",
-      "reason": "beneficiary FI SG2 has no credential: its node refuses to sign, so no attestation exists and no transaction is emitted. A third party presenting the attestation of another beneficiary is refused by the beneficiary gate before any lock.",
+      "reason": "beneficiary FI SG2 has no credential: its node refuses to sign, so no attestation exists and no transaction is emitted (off-chain, declared). The transaction on the chain is the attack a third party would try: presenting the attestation of another beneficiary, which the beneficiary gate of the source adapter refuses before any lock.",
       "parties": {
         "originatingFI": {
           "name": "FI FR",
@@ -147,7 +147,14 @@
           "chainId": 11155111,
           "phase": "expect_revert",
           "tx": "0x9323a3ab4f5e472e0fd7d0de57e112807532005081d63662913fc422f376bea0",
-          "what": "send reverted with ProofNotBound(customer-due-diligence): the attestation is bound to another beneficiary; nothing was locked, balances identical before and after"
+          "what": "send reverted with ProofNotBound(customer-due-diligence): the attestation is bound to another beneficiary; nothing was locked, balances identical before and after",
+          "expected_revert": {
+            "error": "ProofNotBound",
+            "contains": "customer-due-diligence"
+          },
+          "declared_offchain": [
+            "the node of FI SG2 holds no credential and refuses to sign: no attestation exists and no transaction is emitted. A chain cannot show a signature that was never made; the revert above replays the attack a third party would try with the attestation of another beneficiary."
+          ]
         }
       ]
     },
@@ -173,7 +180,16 @@
           "chainId": 11155111,
           "phase": "expect_revert",
           "tx": "0x20df734e7ca8c48f7cbe4b80f150ce694779a4c52429b86052ae2de4cbacb8b8",
-          "what": "transfer reverted: ZkSanctionsWrapperPolicy rejects the sanctions proof; nothing was locked"
+          "what": "transfer reverted: ZkSanctionsWrapperPolicy rejects the sanctions proof; nothing was locked",
+          "expected_revert": {
+            "error": "PolicyRunRejected",
+            "selector": "transferFrom",
+            "policy": "zk.source.ZkSanctionsWrapperPolicy",
+            "contains": "ZkSanctionsWrapperPolicy: SAN01 sanctions proof is not valid for this transfer"
+          },
+          "declared_offchain": [
+            "for a party on the public list the prover exits with code 3 and writes no proof: an off-chain fact that leaves nothing on a chain. The revert above is the proof made for ANOTHER identifier, refused by the wrapper."
+          ]
         }
       ]
     },
@@ -199,7 +215,13 @@
           "chainId": 11155111,
           "phase": "expect_revert",
           "tx": "0x901c47fe62005ff5305b33df849f4c263fe7e02081898857952bbb1094d2e0e6",
-          "what": "transfer reverted: LegBindingPolicy proof already used; nothing was locked"
+          "what": "transfer reverted: LegBindingPolicy proof already used; nothing was locked",
+          "expected_revert": {
+            "error": "PolicyRunRejected",
+            "selector": "transferFrom",
+            "policy": "source.contracts.AtelierEnvelopeBindingPolicy",
+            "contains": "LegBindingPolicy: proof already used"
+          }
         }
       ]
     },
@@ -225,7 +247,13 @@
           "chainId": 11155111,
           "phase": "expect_revert",
           "tx": "0xd05233e6f395dc10c786a635ef8aa0bbffbb10931dfcbcfc18b203a565077723",
-          "what": "transfer reverted: ZkSanctionsWrapperPolicy rejects the altered proof; nothing was locked"
+          "what": "transfer reverted: ZkSanctionsWrapperPolicy rejects the altered proof; nothing was locked",
+          "expected_revert": {
+            "error": "PolicyRunRejected",
+            "selector": "transferFrom",
+            "policy": "zk.source.ZkSanctionsWrapperPolicy",
+            "contains": "ZkSanctionsWrapperPolicy: SAN01 sanctions proof is not valid for this transfer"
+          }
         }
       ]
     },
@@ -264,7 +292,13 @@
           "chainId": 421614,
           "phase": "refuse",
           "tx": "0x3a5a479bd47d237f67d65aece72e22ab9fb541ccbb6b5e68d10a5caa02591dd4",
-          "what": "delivery refused by the arrival attestation validator (attestation not authentic); the swap is rolled back; the value stays in transit as 1000 wEURX at the composer; the receipt carries zero token transfers"
+          "what": "delivery refused by the arrival attestation validator (attestation not authentic); the swap is rolled back; the value stays in transit as 1000 wEURX at the composer; the receipt carries zero token transfers",
+          "expected_refusal": {
+            "error": "PolicyRunRejected",
+            "selector": "transfer",
+            "policy": "destination.contracts.TestAttestationValidatorPolicy",
+            "contains": "attestation of check customer-due-diligence is not authentic"
+          }
         },
         {
           "chainId": 421614,
@@ -286,7 +320,14 @@
         }
       ],
       "guid": "0xe25843847cbbde6e549c4afbbd70b3274a08de3a7710c46dd44a5f4775d610bd"
-    }
+    },
+    "not_played": [
+      "a proof past its freshness window (stale root): checked only by a policy read on a test instance, not by a wrapper transaction",
+      "an invalid signature, or a node key revoked, at the SOURCE (the key revocation is played at the arrival only)",
+      "a party on the sanctions list at the BENEFICIARY side (the listed-party refusal is played for the payer)",
+      "route 0, the direct pool (the rule picked route 1 at 1000 EURX; the checks for route 0 exist but no pass exercises them)",
+      "any amount other than 1000 EURX, and any payer other than FI FR"
+    ]
   },
   "wiring": {
     "note": "LayerZero pathway of the FX corridor, pinned by the application on both chains (all six steps of the OFT wiring list). Re-applied to the second-generation adapters on 2026-10-18; the library, DVN, executor and gas values are unchanged. Replayed read-only by scripts/demo/wiring-check.mjs; set by scripts/wiring/WireLZ.s.sol. Enforced options ADD to the caller's options, so the sender passes none.",

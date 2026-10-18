@@ -70,22 +70,44 @@ Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, und
 
 - `conforming`: wrap, gated transfer and lock at the source, swap and gated delivery at arrival, unwrap;
 - `refused`, `refused_sanctions`, `refused_replay`, `refused_forged_proof`: refusals made at the source, before any
-  lock. Each transaction reverts, so the proof of refusal is an EVM status of failed with no log, and balances equal
-  before and after;
+  lock. Each transaction reverts: the proof of refusal is the EVM status of failed plus the error read by replaying
+  the call at the block before, and balances equal before and after;
 - `returned`: the residual case where the node key is revoked after signing, the arrival refuses, and the value goes
   back to the payer.
 
-A reader holding only this surface replays them end to end, reading each receipt live on the public RPC:
+A reader holding only this surface verifies them end to end, reading each receipt live on the public RPC:
 
 ```
 node scripts/demo/corridor-fx-e2e.mjs
 ```
 
-For each leg it prints the block, the EVM status, the transaction target cross-checked against a named corridor
-contract, the explorer link, and the token movements asserted from the receipt logs. It is read only: it joins the
-public chains, signs nothing and holds no key (point it at your own node with `--rpc-sepolia` and `--rpc-arbitrum`
-if you prefer the public endpoints not be used). The previous generation of the corridor (50 EURX passes, identity
-gated wrappers) is kept under `history` and is not replayed.
+It is read only: it signs nothing, holds no key and has no dependency (Node 18+). It derives the event and error
+selectors from the ABIs of `abi/`, and takes every expected value from the tracker. For each transaction it prints
+the block, the EVM status, the target cross-referenced to a named corridor contract, the explorer link, then the
+checks:
+
+| what the corridor claims | what the script reads |
+|---|---|
+| the token moves only once the wrapper has verified the proofs | `PolicyRunComplete` of the Policy Manager on each gated transfer (it is emitted only when every installed policy accepted), and `getPolicies` at the block before: the sanctions non-membership policy is installed on the wrapper of each chain |
+| one payment crosses two ledgers | the LayerZero guid born at the source lock (`OFTSent`, and the packet of the Endpoint) is the guid composed and delivered at the arrival (`ComposeDelivered`, composer `Delivered`) |
+| the amounts are exact | wrap, lock, delivery, burn and unwrap are compared to the wei with the tracker; the rate and the distance to the reference rate are recomputed from the amounts |
+| the better route wins | both routes are quoted at the block before the swap (`route-agent.mjs --block`): the route used is the higher output, and the SGDX delivered equals its quote |
+| the composer never holds USDX | no USDX transfer touches the composer, which is itself present in seven transfers of the transaction (a negative check with a positive witness) |
+| a refusal at the source moves nothing | the transaction failed, was sent to the source adapter by the payer, did not run out of gas, and its call replayed at the block before reverts with the error the tracker names (policy address and message); the payer balance and the lock are read before and after |
+| a refusal at arrival leaves nothing behind | `Refused` for the same guid with the decoded reason, no transfer, no completed policy run; the key window is in order (revoked, refused, restored, returned); `ReturnedToSource`, a second guid for the return packet, `ReturnedToPayer` for the exact amount |
+
+What a chain cannot show is printed as `declared` and never counted: a signature that was never made, a prover that
+exits with code 3. The tracker lists under `demonstration_passes.not_played` what these passes do not exercise
+(stale proof, invalid signature or revoked key at the source, listed party at the beneficiary side, route 0, other
+amounts); the script prints that list in its summary.
+
+Exit code: 0 when every check was made and passed; 1 when a check failed; 3 when nothing failed but a check could not
+be made (RPC unreachable or history not served). An endpoint that answers another chain id counts as a failure. A green exit therefore means that all
+checks were made. The replay of reverts, the installed policies, the route quotes and the balances before need the
+state of an old block, which many public endpoints prune: the default Arbitrum Sepolia endpoint serves it, and
+`--rpc-sepolia` and `--rpc-arbitrum` point the script at your own node. `--skip-history` skips those checks
+and says so (exit 0, "not a full result"). The previous generation of the corridor (50 EURX passes, identity gated
+wrappers) is kept under `history` and is not replayed.
 
 ### Two exchange routes at arrival
 
@@ -100,7 +122,8 @@ fail. All pools hold base tokens (EURX, USDX, SGDX), never wrappers. USDX is a d
 wrapper: it exists only inside the router call, and compliance applies to the transfer of the wrapped SGDX. At
 1000 EURX each pass moves the pool by a few basis points, so the rule switches between the two routes with the pool
 state. `scripts/demo/corridor-fx-e2e.mjs` checks, on a route 1 pass, that both pivot pools moved, that the direct pool
-did not, and that the composer never held USDX.
+did not, that the composer never held USDX, and that the rule picks route 1 when both routes are quoted at the block
+before the swap. The rule switches with the pool state: asked again later, the agent can pick route 0.
 
 To see which route the agent would pick right now, read-only:
 
