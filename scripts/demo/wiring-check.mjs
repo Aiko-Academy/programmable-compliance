@@ -23,6 +23,9 @@
 //   --rpc-sepolia <url>    override the Ethereum Sepolia endpoint
 //   --rpc-arbitrum <url>   override the Arbitrum Sepolia endpoint
 //   --tracker <file>       read the expected values from another tracker file (default: the surface's own)
+//   --require-contract-owner   fail when the adapter owner (which is also its delegate) is an EOA. The owner can
+//                          replace the DVN set or the peer, so in production it is a multisig or a timelock.
+//                          Without the flag an EOA owner is reported as a warning (acceptable on a demo).
 
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -30,6 +33,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const argv = process.argv.slice(2);
+const flag = (name) => argv.includes(name);
 const opt = (name, def) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : def; };
 
 const tracker = JSON.parse(readFileSync(opt('--tracker', join(ROOT, 'deployments', 'fx-corridor.json')), 'utf8'));
@@ -137,6 +141,9 @@ for (const c of CHAINS) {
     const owner = addrOf(words(await ethCall(c.rpc, adapter, SEL.owner))[0]);
     const delegate = addrOf(words(await ethCall(c.rpc, ENDPOINT, SEL.delegates + word(adapter)))[0]);
     say(lc(owner) === lc(delegate), 'adapter delegate equals adapter owner');
+    const ownerIsContract = (await rpcCall(c.rpc, 'eth_getCode', [owner, 'latest'])).length > 2;
+    if (flag('--require-contract-owner')) say(ownerIsContract, `owner ${owner} is a contract (multisig or timelock)`);
+    else console.log(`  ${ownerIsContract ? 'info' : 'WARN'}  owner ${owner} is ${ownerIsContract ? 'a contract' : 'an EOA: acceptable on a demo, not in production'}`);
 
     const peer = words(await ethCall(c.rpc, adapter, SEL.peers + num(p.remoteEid)))[0];
     say(addrOf(peer) === lc(p.remoteAdapter), `peer(${p.remoteEid}) is the remote adapter`);

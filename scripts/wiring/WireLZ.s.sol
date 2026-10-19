@@ -55,6 +55,8 @@ interface ILzReceiveLibRaw {
 
 interface IOAppWiring {
     function owner() external view returns (address);
+    function setDelegate(address delegate) external;
+    function transferOwnership(address newOwner) external;
     function setPeer(uint32 eid, bytes32 peer) external;
     function peers(uint32 eid) external view returns (bytes32);
     function setEnforcedOptions(EnforcedOptionParam[] calldata params) external;
@@ -74,16 +76,25 @@ interface IOAppWiring {
 ///             exit code, not from a log.
 ///           - `run()`: sets what differs, under the adapter's delegate. Without `--broadcast` it is a simulation.
 ///
-///         What is pinned is WHAT WAS ALREADY EFFECTIVE (2 confirmations, one required DVN = LayerZero Labs,
-///         default executor, 10,000 bytes): the setting changes no behaviour, it pins it. Changing the DVN (for
-///         example to a compliance DVN) is another line of `_spec`, applied by this same script.
+///         What was pinned on 2026-10-16 was WHAT WAS ALREADY EFFECTIVE (2 confirmations, one required DVN = LayerZero
+///         Labs, default executor, 10,000 bytes). On 2026-10-20 a second required DVN was added (`dvn2`): two verifiers
+///         must confirm. Changing the DVN set again (for example to a compliance DVN) is another line of `_spec`,
+///         applied by this same script.
 ///
 ///         Enforced options ADD to the caller's options (the executor sums the `lzReceive` gas and the
 ///         `lzCompose` gas). Once they are set, the caller sends no options: a send that repeated the same
 ///         amounts would count them twice.
 ///
+///         Control surface: the owner of the adapter is also its delegate, and either can replace the DVN set or the
+///         peer, which is enough to forge messages and drain the lockbox. On a testnet the deployer key holds both.
+///         `check()` reports whether the owner is a contract (multisig or timelock) and fails on an EOA when
+///         REQUIRE_CONTRACT_OWNER=true. `handover()` moves delegate and ownership to NEW_OWNER in one broadcast.
+///
 ///         Env: LOCAL_ADAPTER and REMOTE_ADAPTER (default: the FX corridor pair), ENFORCED_LZRECEIVE_GAS (500000),
 ///         ENFORCED_COMPOSE_GAS (4500000, Sepolia to Arbitrum direction only: the return path has no composer).
+///         EXTRA_REQUIRED_DVN (address ON THE CHAIN BEING RUN) overrides the second required DVN of the send and the
+///         receive ULN config; the default is the one set on 2026-10-20. The zero address means "no second DVN". REQUIRE_CONTRACT_OWNER (true/false),
+///         NEW_OWNER and HANDOVER_CONFIRM (the same address, typed twice) drive the control surface.
 ///         See scripts/wiring/README.md.
 contract WireLZ is Script {
     using OptionsBuilder for bytes;
@@ -103,6 +114,7 @@ contract WireLZ is Script {
         address recvLib;
         address executor;
         address dvn; // the required DVN on THIS chain (the same logical DVN has another address on the other chain)
+        address dvn2; // second required DVN on THIS chain (EXTRA_REQUIRED_DVN overrides the default), zero for none
         address adapter;
         address remoteAdapter;
         bool enforce; // enforced options on the plain message (SEND): lzReceive
@@ -129,8 +141,9 @@ contract WireLZ is Script {
                 recvLib: vm.parseAddress("0xdaf00f5ee2158dd58e0d3857851c432e34a3a851"),
                 executor: vm.parseAddress("0x718b92b5cb0a5552039b593faf724d182a881eda"),
                 dvn: vm.parseAddress("0x8eebf8b423b73bfca51a1db4b7354aa0bfca9193"), // LayerZero Labs
-                adapter: vm.envOr("LOCAL_ADAPTER", vm.parseAddress("0x6f291E30A53366888F2A74673B7c4B7305c7D059")),
-                remoteAdapter: vm.envOr("REMOTE_ADAPTER", vm.parseAddress("0xf0d5648dbc06d78476B56b6EF124408E3ef5e189")),
+                dvn2: vm.envOr("EXTRA_REQUIRED_DVN", vm.parseAddress("0x843139c725c2fb9814de6a12fb890d8dbf3e1698")),
+                adapter: vm.envOr("LOCAL_ADAPTER", vm.parseAddress("0x6ad8F75cfef4BA21499106acE487c3273902eD91")),
+                remoteAdapter: vm.envOr("REMOTE_ADAPTER", vm.parseAddress("0xbC2060BE78E637E16cD09a856dF2eE2534A59a80")),
                 enforce: true,
                 compose: true,
                 maxMessageSize: 10000,
@@ -146,8 +159,9 @@ contract WireLZ is Script {
                 recvLib: vm.parseAddress("0x75db67cdab2824970131d5aa9cecfc9f69c69636"),
                 executor: vm.parseAddress("0x5df3a1cebbd9c8ba7f8df51fd632a9aef8308897"),
                 dvn: vm.parseAddress("0x53f488e93b4f1b60e8e83aa374dbe1780a1ee8a8"), // LayerZero Labs
-                adapter: vm.envOr("LOCAL_ADAPTER", vm.parseAddress("0xf0d5648dbc06d78476B56b6EF124408E3ef5e189")),
-                remoteAdapter: vm.envOr("REMOTE_ADAPTER", vm.parseAddress("0x6f291E30A53366888F2A74673B7c4B7305c7D059")),
+                dvn2: vm.envOr("EXTRA_REQUIRED_DVN", vm.parseAddress("0xc6cec4e6b8f3dc87e676d06a24864081311eda15")),
+                adapter: vm.envOr("LOCAL_ADAPTER", vm.parseAddress("0xbC2060BE78E637E16cD09a856dF2eE2534A59a80")),
+                remoteAdapter: vm.envOr("REMOTE_ADAPTER", vm.parseAddress("0x6ad8F75cfef4BA21499106acE487c3273902eD91")),
                 enforce: true,
                 compose: false,
                 maxMessageSize: 10000,
@@ -159,13 +173,20 @@ contract WireLZ is Script {
     }
 
     function _ulnSpec(Spec memory s) internal pure returns (UlnConfig memory u) {
-        address[] memory req = new address[](1);
-        req[0] = s.dvn;
+        // The ULN requires the DVN list sorted ascending and without duplicates.
+        uint8 n = s.dvn2 == address(0) ? 1 : 2;
+        address[] memory req = new address[](n);
+        if (n == 1) {
+            req[0] = s.dvn;
+        } else {
+            require(s.dvn2 != s.dvn, "WireLZ: EXTRA_REQUIRED_DVN equals the first DVN");
+            (req[0], req[1]) = s.dvn < s.dvn2 ? (s.dvn, s.dvn2) : (s.dvn2, s.dvn);
+        }
         // optionalDVNCount = NIL: "no optional DVN" written explicitly. Left at 0, it would inherit any optional
         // DVN that LayerZero adds to the default one day.
         u = UlnConfig({
             confirmations: s.confirmations,
-            requiredDVNCount: 1,
+            requiredDVNCount: n,
             optionalDVNCount: NIL_DVN_COUNT,
             optionalDVNThreshold: 0,
             requiredDVNs: req,
@@ -210,6 +231,10 @@ contract WireLZ is Script {
         // target witness: the endpoint answers with the expected EID, otherwise we are reading the wrong chain
         _ok(ep.eid() == s.localEid, "endpoint.eid() == expected local EID");
         _ok(ep.delegates(s.adapter) == app.owner(), "adapter delegate == adapter owner");
+        _checkControl(app.owner());
+        if (s.dvn2 != address(0)) {
+            _ok(s.dvn2.code.length > 0, "second required DVN has code on this chain");
+        }
 
         _ok(app.peers(s.remoteEid) == bytes32(uint256(uint160(s.remoteAdapter))), "peer(remoteEid) == remote adapter");
 
@@ -244,6 +269,20 @@ contract WireLZ is Script {
         }
     }
 
+    // The owner and the delegate can swap the DVN set or the peer, so they control the lockbox. An EOA is a demo
+    // setting: reported as a warning, and a failure once REQUIRE_CONTRACT_OWNER=true (production).
+    function _checkControl(address owner_) internal {
+        bool isContract = owner_.code.length > 0;
+        console2.log("   owner/delegate :", owner_);
+        if (vm.envOr("REQUIRE_CONTRACT_OWNER", false)) {
+            _ok(isContract, "owner is a contract (multisig or timelock)");
+        } else if (isContract) {
+            console2.log("   info    owner is a contract");
+        } else {
+            console2.log("   WARN    owner is an EOA: acceptable on a demo, not in production");
+        }
+    }
+
     function _ulnSame(UlnConfig memory got, UlnConfig memory want) internal pure returns (bool) {
         return got.confirmations == want.confirmations && got.requiredDVNCount == want.requiredDVNCount
             && got.optionalDVNCount == want.optionalDVNCount && got.optionalDVNThreshold == want.optionalDVNThreshold
@@ -253,6 +292,34 @@ contract WireLZ is Script {
 
     function _ulnEq(UlnConfig memory got, UlnConfig memory want, string memory label) internal {
         _ok(_ulnSame(got, want), label);
+    }
+
+    // ── hand over: delegate and owner to a secure address ───────────────────────────────────────────────────────
+
+    /// @notice Moves the delegate, then the ownership, of the adapter to NEW_OWNER. The delegate goes first
+    ///         because `setDelegate` is owner-only. Both are immediate: a wrong address is final, hence three
+    ///         guards: NEW_OWNER must be a contract (unless ALLOW_EOA_OWNER=true), HANDOVER_CONFIRM must repeat
+    ///         it, and the move is a simulation without --broadcast. After it, `run()` must be signed by
+    ///         NEW_OWNER, so the multisig has to be able to send the transactions `run()` lists.
+    function handover() external {
+        Spec memory s = _spec();
+        IOAppWiring app = IOAppWiring(s.adapter);
+        address to = vm.envAddress("NEW_OWNER");
+        require(to != address(0) && to != app.owner(), "WireLZ: NEW_OWNER is zero or already the owner");
+        require(vm.envOr("HANDOVER_CONFIRM", address(0)) == to, "WireLZ: HANDOVER_CONFIRM must repeat NEW_OWNER");
+        require(
+            to.code.length > 0 || vm.envOr("ALLOW_EOA_OWNER", false),
+            "WireLZ: NEW_OWNER has no code on this chain (multisig or timelock expected)"
+        );
+        require(ILzEndpointWiring(s.endpoint).eid() == s.localEid, "WireLZ: the endpoint does not carry the expected EID");
+        console2.log("== WireLZ handover :", s.name, "adapter", s.adapter);
+        console2.log("   from", app.owner());
+        console2.log("   to  ", to);
+        vm.startBroadcast();
+        app.setDelegate(to);
+        app.transferOwnership(to);
+        vm.stopBroadcast();
+        console2.log("   set   setDelegate + transferOwnership (read back with check() in a separate command)");
     }
 
     // ── set: only what differs ───────────────────────────────────────────────────────────────────────────────────

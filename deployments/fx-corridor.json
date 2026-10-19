@@ -330,8 +330,8 @@
     ]
   },
   "wiring": {
-    "note": "LayerZero pathway of the FX corridor, pinned by the application on both chains (all six steps of the OFT wiring list). Re-applied to the second-generation adapters on 2026-10-18; the library, DVN, executor and gas values are unchanged. Replayed read-only by scripts/demo/wiring-check.mjs; set by scripts/wiring/WireLZ.s.sol. Enforced options ADD to the caller's options, so the sender passes none.",
-    "read_on": "2026-10-18",
+    "note": "LayerZero pathway of the FX corridor, pinned by the application on both chains (all six steps of the OFT wiring list). Re-applied to the second-generation adapters on 2026-10-18; the library, executor and gas values are unchanged. On 2026-10-20 a second required DVN was added on both chains (send and receive): two required DVNs, LayerZero Labs and Horizen. Replayed read-only by scripts/demo/wiring-check.mjs; set by scripts/wiring/WireLZ.s.sol. Enforced options ADD to the caller's options, so the sender passes none.",
+    "read_on": "2026-10-20",
     "source": {
       "chainId": 11155111,
       "eid": 40161,
@@ -344,9 +344,11 @@
       "maxMessageSize": 10000,
       "confirmations": 2,
       "requiredDVNs": [
+        "0x843139c725c2FB9814dE6A12fB890D8dBf3e1698",
         "0x8eebf8b423B73bFCa51a1Db4B7354AA0bFCA9193"
       ],
       "requiredDVNNames": [
+        "Horizen",
         "LayerZero Labs"
       ],
       "optionalDVNs": [],
@@ -378,10 +380,12 @@
       "maxMessageSize": 10000,
       "confirmations": 2,
       "requiredDVNs": [
-        "0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8"
+        "0x53f488E93b4f1b60E8E83aa374dBe1780A1EE8a8",
+        "0xc6cec4e6b8F3DC87E676D06A24864081311EDa15"
       ],
       "requiredDVNNames": [
-        "LayerZero Labs"
+        "LayerZero Labs",
+        "Horizen"
       ],
       "optionalDVNs": [],
       "enforcedOptions": {
