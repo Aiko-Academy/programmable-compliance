@@ -69,6 +69,10 @@ Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, und
 1000 EURX:
 
 - `conforming`: wrap, gated transfer and lock at the source, swap and gated delivery at arrival, unwrap;
+- `conforming_safe_2dvn`, `refused_safe_2dvn`, `returned_safe_2dvn`: the same three scenarios played again on
+  2026-10-20 (09:32 to 09:43 UTC), after the adapters were handed to a test Safe and with two required DVNs
+  (LayerZero Labs and Horizen) on send and receive. The conforming pass took route 0 (the direct pool quoted more than
+  the pivot at that block). The Safe signed none of these transactions;
 - `refused`, `refused_sanctions`, `refused_replay`, `refused_forged_proof`: refusals made at the source, before any
   lock. Each transaction reverts: the proof of refusal is the EVM status of failed plus the error read by replaying
   the call at the block before, and balances equal before and after;
@@ -98,7 +102,7 @@ checks:
 
 What a chain cannot show is printed as `declared` and never counted: a signature that was never made, a prover that
 exits with code 3. The tracker lists under `demonstration_passes.not_played` what these passes do not exercise
-(stale proof, invalid signature or revoked key at the source, listed party at the beneficiary side, route 0, other
+(stale proof, invalid signature or revoked key at the source, listed party at the beneficiary side, other
 amounts); the script prints that list in its summary.
 
 Exit code: 0 when every check was made and passed; 1 when a check failed; 3 when nothing failed but a check could not

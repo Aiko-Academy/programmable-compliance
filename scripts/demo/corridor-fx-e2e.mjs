@@ -317,7 +317,7 @@ function routeCheck(p, block, delivered) {
   const out = [];
   const [direct, pivot] = [0, 1].map((i) => q.quotes.find((x) => x.route === i)?.out);
   out.push(verdict(q.route === p.route,
-    `at block ${block - 1} the rule picks route ${q.route}, the route the pass used (${p.route === 1 ? 'pivot' : 'direct'}): ${f18(pivot)} SGDX against ${f18(direct)} for the direct pool`,
+    `at block ${block - 1} the rule picks route ${q.route}, the route the pass used (${p.route === 1 ? 'pivot' : 'direct'}): ${f18(p.route === 1 ? pivot : direct)} SGDX against ${f18(p.route === 1 ? direct : pivot)} for the other route`,
     `at block ${block - 1} the rule picks route ${q.route}, the pass used route ${p.route}`));
   out.push(verdict(BigInt(q.convertAmount) === delivered, 'the SGDX delivered equals the quote of the chosen route, to the wei',
     `the SGDX delivered (${f18(delivered)}) differs from the quote of the chosen route (${f18(q.convertAmount)})`));

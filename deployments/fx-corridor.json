@@ -325,9 +325,156 @@
       "a proof past its freshness window (stale root): checked only by a policy read on a test instance, not by a wrapper transaction",
       "an invalid signature, or a node key revoked, at the SOURCE (the key revocation is played at the arrival only)",
       "a party on the sanctions list at the BENEFICIARY side (the listed-party refusal is played for the payer)",
-      "route 0, the direct pool (the rule picked route 1 at 1000 EURX; the checks for route 0 exist but no pass exercises them)",
       "any amount other than 1000 EURX, and any payer other than FI FR"
-    ]
+    ],
+    "conforming_safe_2dvn": {
+      "outcome": "settled",
+      "route": 0,
+      "amount_eurx": "1000",
+      "rate_sgd_per_eur": 1.4687706017511446,
+      "beneficiary_delta_sgdx": "1468.770601751144522499",
+      "gap_to_reference_bps": -8.06,
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "receives SGD, node signed the arrival attestation"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "wrap",
+          "tx": "0xce1cbcf45bebea53250f17efad31812d3d14ad5f673545ed749d008cfc0ee797",
+          "what": "FI FR wraps 1000 EURX into wEURX (Policy Wrapper, deposit)"
+        },
+        {
+          "chainId": 11155111,
+          "phase": "lock",
+          "tx": "0x627441316f934a4d08dceb4d753caf527fae702f0351a4a3e74d4aad4cc9dafd",
+          "what": "transferFrom payer to the source adapter, gated by the wrapper policy chain (required checks, leg binding, attestation validator, sanctions non-membership proof); the adapter unwraps and locks 1000 EURX; the beneficiary gate checked the arrival proofs BEFORE the debit"
+        },
+        {
+          "chainId": 421614,
+          "phase": "swap+deliver",
+          "tx": "0x611aa84f0bdd64449a1f3ab221f4becacf25bc1a6a8892b4d5b9ff8625492bb4",
+          "what": "atomic lzCompose on route 0 (direct pool): wEURX unwrapped, 1000 EURX swapped through the direct EURX/SGDX pool, SGDX wrapped, wSGDX delivered to FI SG1 under the wrapper policy chain"
+        },
+        {
+          "chainId": 421614,
+          "phase": "unwrap",
+          "tx": "0xd951c2c13ebd49dc528e93c64e08b7a71e0fcffe71aae82d47362cf68f3bc87f",
+          "what": "FI SG1 unwraps the delivered wSGDX into SGDX"
+        }
+      ],
+      "sanctions": "both parties proven absent from the public sanctions list SAN01 by a Groth16 non-membership proof, verified on-chain by the wrapper policy of each chain",
+      "guid": "0xdb9c8fcc9ee4f88993f0b6f99c668cdb443f70f3ef5eb965588c331f7c908f0f",
+      "note": "Played on 2026-10-20 between 09:32 and 09:35 UTC, after the hand-over of the adapters to a test Safe and with two required DVNs (LayerZero Labs, Horizen). Route 0: the direct pool quoted more than the USD pivot at that block."
+    },
+    "refused_safe_2dvn": {
+      "outcome": "refused",
+      "amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "beneficiary FI SG2 has no credential: its node refuses to sign, so no attestation exists and no transaction is emitted (off-chain, declared). The transaction on the chain is the attack a third party would try: presenting the attestation of another beneficiary, which the beneficiary gate of the source adapter refuses before any lock.",
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG2",
+          "address": "0x96495854Da659fa8e75781bbd1D4767721eff401",
+          "role": "attempts to receive SGD, unknown to its institution node"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "expect_revert",
+          "tx": "0x5a96c56f93ff8c299c98689a2b03ca9441fb6f96ddb2ab6a8bd6d69ec69805a5",
+          "what": "send reverted with ProofNotBound(customer-due-diligence): the attestation is bound to another beneficiary; nothing was locked, balances identical before and after",
+          "expected_revert": {
+            "error": "ProofNotBound",
+            "contains": "customer-due-diligence"
+          },
+          "declared_offchain": [
+            "the node of FI SG2 holds no credential and refuses to sign: no attestation exists and no transaction is emitted. A chain cannot show a signature that was never made; the revert above replays the attack a third party would try with the attestation of another beneficiary."
+          ]
+        }
+      ],
+      "note": "Played on 2026-10-20 at 09:36 UTC, after the hand-over to a test Safe and with two required DVNs."
+    },
+    "returned_safe_2dvn": {
+      "outcome": "returned",
+      "amount_eurx": "1000",
+      "returned_amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "residual case: the node key that signed the arrival attestation is revoked at the arrival seal AFTER signing and before delivery (the propagation window of a key revocation). The gated delivery is refused, the 1000 wEURX stay with the composer, are recorded by guid with the payer, and are sent back through the bridge: burned at arrival (the reserve gets its EURX back), the source lock is released and the return receiver hands the wEURX back to the payer.",
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "would receive SGD; its node key is revoked after signing"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 421614,
+          "phase": "revoke-key",
+          "tx": "0xad494c8001f4ef2129f64e17aeff3027845927c4f70b6621237ab6fe35ab6666",
+          "what": "the node key is revoked at the arrival attestation seal"
+        },
+        {
+          "chainId": 11155111,
+          "phase": "lock",
+          "tx": "0x2c511fa25a0bf16daa1313ed13698fda24f11509375f3fcf83ea975d8c1ea549",
+          "what": "1000 EURX locked at source under the gated transfer"
+        },
+        {
+          "chainId": 421614,
+          "phase": "refuse",
+          "tx": "0x5c0e44f7dcf94565a665988cd3923c2052d38c6cb6466127a8ecc66a73d81d8f",
+          "what": "delivery refused by the arrival attestation validator (attestation not authentic); the swap is rolled back; the value stays in transit as 1000 wEURX at the composer; the receipt carries zero token transfers",
+          "expected_refusal": {
+            "error": "PolicyRunRejected",
+            "selector": "transfer",
+            "policy": "destination.contracts.TestAttestationValidatorPolicy",
+            "contains": "attestation of check customer-due-diligence is not authentic"
+          }
+        },
+        {
+          "chainId": 421614,
+          "phase": "restore-key",
+          "tx": "0x5b8abd252c4204267887bbbd71a392c547251dfa17d7e6223bf7e546073d442b",
+          "what": "the node key is restored at the seal"
+        },
+        {
+          "chainId": 421614,
+          "phase": "return",
+          "tx": "0xd16e4de86e48f95775673a818f4d2e92beb4f8803819f05aae695bcb3c3cc2cc",
+          "what": "returnToSource: the composer 1000 wEURX go to the arrival adapter and are burned, the reserve gets 1000 EURX back"
+        },
+        {
+          "chainId": 11155111,
+          "phase": "credit-payer",
+          "tx": "0xca0b41dac9d4a84a2b11973c90906d511b124d09b0a412b3864a904def260452",
+          "what": "the source lock is released by the LayerZero delivery and the return receiver hands 1000 wEURX back to FI FR by a gated transfer"
+        }
+      ],
+      "guid": "0xfb5e896570f731312d7d5a35e59c4a3a5350d163c13f2b06d98fb1811e2b2a18",
+      "note": "Played on 2026-10-20 between 09:37 and 09:43 UTC, after the hand-over to a test Safe and with two required DVNs."
+    }
   },
   "wiring": {
     "note": "LayerZero pathway of the FX corridor, pinned by the application on both chains (all six steps of the OFT wiring list). Re-applied to the second-generation adapters on 2026-10-18; the library, executor and gas values are unchanged. On 2026-10-20 a second required DVN was added on both chains (send and receive): two required DVNs, LayerZero Labs and Horizen. Replayed read-only by scripts/demo/wiring-check.mjs; set by scripts/wiring/WireLZ.s.sol. Enforced options ADD to the caller's options, so the sender passes none.",
