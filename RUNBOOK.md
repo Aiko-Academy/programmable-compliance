@@ -73,6 +73,9 @@ Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, und
   2026-10-20 (09:32 to 09:43 UTC), after the adapters were handed to a test Safe and with two required DVNs
   (LayerZero Labs and Horizen) on send and receive. The conforming pass took route 0 (the direct pool quoted more than
   the pivot at that block). The Safe signed none of these transactions;
+- `conforming_500_safe_2dvn`: a conforming pass at 500 EURX (an amount other than 1000), route 1;
+- `refused_revoked_key_source_safe_2dvn`: the node key is revoked at the source seal after it signed a valid
+  attestation, the source wrapper refuses the transfer before any lock, and the key is restored right after;
 - `refused`, `refused_sanctions`, `refused_replay`, `refused_forged_proof`: refusals made at the source, before any
   lock. Each transaction reverts: the proof of refusal is the EVM status of failed plus the error read by replaying
   the call at the block before, and balances equal before and after;
