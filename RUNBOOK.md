@@ -76,6 +76,12 @@ Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, und
 - `conforming_500_safe_2dvn`: a conforming pass at 500 EURX (an amount other than 1000), route 1;
 - `refused_revoked_key_source_safe_2dvn`: the node key is revoked at the source seal after it signed a valid
   attestation, the source wrapper refuses the transfer before any lock, and the key is restored right after;
+- `refused_invalid_signature_source_safe_2dvn`: one bit of the node signature is flipped while the key stays active,
+  the source wrapper refuses before any lock;
+- `returned_sanctions_beneficiary_safe_2dvn`: the arrival leg carries a valid sanctions proof made for another
+  identifier than the beneficiary, the arrival wrapper refuses, the funds go back under a second guid;
+- `conforming_payer_sg1_safe_2dvn`: a payer other than FI FR (FI SG1 pays and receives, an FX conversion for its own
+  account);
 - `refused`, `refused_sanctions`, `refused_replay`, `refused_forged_proof`: refusals made at the source, before any
   lock. Each transaction reverts: the proof of refusal is the EVM status of failed plus the error read by replaying
   the call at the block before, and balances equal before and after;

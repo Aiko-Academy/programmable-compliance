@@ -323,9 +323,8 @@
     },
     "not_played": [
       "a proof past its freshness window (stale root): checked only by a policy read on a test instance, not by a wrapper transaction",
-      "an invalid signature at the SOURCE (a node key revoked at the source is now played; the key revocation at the arrival was already played)",
-      "a party on the sanctions list at the BENEFICIARY side (the listed-party refusal is played for the payer)",
-      "any amount other than 500 and 1000 EURX, and any payer other than FI FR"
+      "a party actually ON the list at the beneficiary side: no snapshot listing a party was published; the refusal is played with a valid proof made for another identifier (a listed party obtains no proof, the prover exits with code 3)",
+      "any amount other than 500 and 1000 EURX"
     ],
     "conforming_safe_2dvn": {
       "outcome": "settled",
@@ -556,6 +555,141 @@
         }
       ],
       "note": "Played on 2026-10-20 at 09:57 UTC. Revocation tx 0x9abf792d, restoration tx 0x048b8d1d, both on the source seal."
+    },
+    "refused_invalid_signature_source_safe_2dvn": {
+      "outcome": "refused",
+      "amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "one bit of the node signature (word r of the first source attestation item) is flipped while the node key stays ACTIVE: the attestation validator of the source wrapper refuses the gated transfer before any lock.",
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "would receive SGD"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "expect_revert",
+          "tx": "0x70c8817024d1e16789c52c95bd47837352c39e166e0d25632e36b6fec66d7cb1",
+          "what": "transfer reverted: the AttestationValidatorPolicy of the source wrapper rejects the altered signature; nothing was locked, balances identical before and after",
+          "expected_revert": {
+            "error": "PolicyRunRejected",
+            "selector": "transferFrom",
+            "policy": "source.contracts.TestAttestationValidatorPolicy",
+            "contains": "attestation of check customer-due-diligence is not authentic"
+          }
+        }
+      ],
+      "note": "Played on 2026-10-20 at 10:07 UTC."
+    },
+    "returned_sanctions_beneficiary_safe_2dvn": {
+      "outcome": "returned",
+      "amount_eurx": "1000",
+      "returned_amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "beneficiary-side sanctions gate: the sanctions proof of the arrival leg is a VALID proof but made for another identifier than the beneficiary (a listed party obtains no proof at all: the prover exits with code 3). The arrival wrapper policy refuses the delivery, the 1000 wEURX stay with the composer, are recorded by guid and sent back through the bridge to the payer, who is made whole. The node key is not touched.",
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "would receive SGD; its node key is revoked after signing"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "lock",
+          "tx": "0x924b175151b5d909f2120071459b399358f6f54c4b5a4fb75b5571c25ec8cdcd",
+          "what": "1000 EURX locked at source under the gated transfer"
+        },
+        {
+          "chainId": 421614,
+          "phase": "refuse",
+          "tx": "0xc59d54bc1888999365b34ffb03b927fcb5e169a619480c6133e68953e6a7dd77",
+          "what": "delivery refused by the sanctions policy of the arrival wrapper (the proof is not valid for the beneficiary); the swap is rolled back; the value stays in transit as 1000 wEURX at the composer; the receipt carries zero token transfers",
+          "expected_refusal": {
+            "error": "PolicyRunRejected",
+            "selector": "transfer",
+            "policy": "zk.destination.ZkSanctionsWrapperPolicy",
+            "contains": "SAN01 sanctions proof is not valid for this transfer"
+          }
+        },
+        {
+          "chainId": 421614,
+          "phase": "return",
+          "tx": "0x1a675a9e2130f8d1bc0c4c8fdfe7ce1f5767ee90b1d213bcc230fc335d38786c",
+          "what": "returnToSource: the composer 1000 wEURX go to the arrival adapter and are burned, the reserve gets 1000 EURX back"
+        },
+        {
+          "chainId": 11155111,
+          "phase": "credit-payer",
+          "tx": "0x49c7308489ce0eb9244e8578f5cc89c3882d5bc8807ecd2d8618b790dbf27ce1",
+          "what": "the source lock is released by the LayerZero delivery and the return receiver hands 1000 wEURX back to FI FR by a gated transfer"
+        }
+      ],
+      "guid": "0x8db993938133be8757da8dff9fe6a0c847bbe030989fd564069db5ed3ff88466",
+      "note": "Played on 2026-10-20 at 10:10 UTC."
+    },
+    "conforming_payer_sg1_safe_2dvn": {
+      "outcome": "settled",
+      "route": 0,
+      "amount_eurx": "1000",
+      "rate_sgd_per_eur": 1.468556423088293,
+      "beneficiary_delta_sgdx": "1468.556423088293077513",
+      "gap_to_reference_bps": -9.51,
+      "parties": {
+        "originatingFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "pays EUR on Ethereum Sepolia (a payer other than FI FR)"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "receives SGD on Arbitrum Sepolia, node signed the arrival attestation (same institution on both legs: an FX conversion for its own account)"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "wrap",
+          "tx": "0x490cf6680d69f4509defe7746295b1fe6d3fbb888ab7bf8c0b6825e757d7edb4",
+          "what": "FI SG1 wraps 1000 EURX into wEURX (Policy Wrapper, deposit)"
+        },
+        {
+          "chainId": 11155111,
+          "phase": "lock",
+          "tx": "0xfd8db9cc178adbb533a62593c254f0693ab87065414b6130b7a7627a18438bd6",
+          "what": "transferFrom payer to the source adapter, gated by the wrapper policy chain (required checks, leg binding, attestation validator, sanctions non-membership proof); the adapter unwraps and locks 1000 EURX; the beneficiary gate checked the arrival proofs BEFORE the debit"
+        },
+        {
+          "chainId": 421614,
+          "phase": "swap+deliver",
+          "tx": "0x47c649ceefb158f3207c8be1d2db1487470d7e6475e8d406426d881972749f7a",
+          "what": "atomic lzCompose on route 0 (direct pool): wEURX unwrapped, 1000 EURX swapped through the direct EURX/SGDX pool, SGDX wrapped, wSGDX delivered to FI SG1 under the wrapper policy chain"
+        },
+        {
+          "chainId": 421614,
+          "phase": "unwrap",
+          "tx": "0x93dd5510226c99d9dd88c1785c618313adf21953c18961361edd15695674163e",
+          "what": "FI SG1 unwraps the delivered wSGDX into SGDX"
+        }
+      ],
+      "sanctions": "both parties proven absent from the public sanctions list SAN01 by a Groth16 non-membership proof, verified on-chain by the wrapper policy of each chain",
+      "guid": "0xe551a972bfc5498b91e6731ee55c8c34ef8e31d41943995a79dd4853daa28166",
+      "note": "Played on 2026-10-20 at 10:15 UTC with FI SG1 as the payer (funded with gas and 1000 EURX the same day)."
     }
   },
   "wiring": {
