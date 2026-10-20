@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
-const portes = [['check-handoff', 'check-handoff.mjs']];
+const portes = [['check-handoff', 'check-handoff.mjs'], ['check-traceur', 'check-traceur.mjs']];
 let echecs = 0;
 for (const [nom, script] of portes) {
   console.log(`\n# ${nom}`);
