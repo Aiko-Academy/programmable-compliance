@@ -64,10 +64,25 @@ Before choosing a DVN, quote it on the pathway: a DVN that does not serve the pa
 ## Who controls the adapter
 
 The owner of the adapter is also its delegate. Either can replace the DVN set or the peer, which is enough to
-forge messages and drain the lockbox. On a testnet the deployer key holds both. `check()` and `wiring-check.mjs`
+forge messages and drain the lockbox. Until 2026-10-20 the deployer key held both on the two testnets. `check()` and `wiring-check.mjs`
 report whether the owner is a contract, as a warning. `REQUIRE_CONTRACT_OWNER=true` (script) and
 `--require-contract-owner` (reader) turn that warning into a failure, for production.
 
 `handover()` moves the delegate, then the ownership, to `NEW_OWNER`. It refuses an address without code
 (`ALLOW_EOA_OWNER=true` lifts that), and `HANDOVER_CONFIRM` must repeat `NEW_OWNER`. Both moves are immediate,
 so a wrong address is final. After a handover, `run()` must be signed by the new owner.
+
+Rehearsal done on 2026-10-20. On both testnets the delegate and the owner of each adapter are now a test Safe,
+`0x1C3467fa81202766C949433b1131f2f3eA41B8B7` (Safe 1.4.1, same address on Ethereum Sepolia and Arbitrum Sepolia, two
+signers, threshold 1). `handover()` was simulated, then broadcast, then read back in a separate command:
+`check()` with `REQUIRE_CONTRACT_OWNER=true` exits 0, and `wiring-check.mjs --require-contract-owner` reports 0
+difference. This is a rehearsal of the mechanism. The production multisig is not chosen yet, and a threshold of 1
+with a demonstration key is not a production control. From now on `run()` has to be signed through this Safe.
+
+## Checking the DVN against LayerZero's metadata
+
+`wiring-check.mjs --check-dvn-metadata` reads LayerZero's public testnet DVN metadata
+(`https://metadata.layerzero-api.com/v1/metadata/dvns?environment=testnet`) and fails when a required DVN is unknown,
+deprecated, or flagged `lzReadCompatible`. A DVN that offers an lzRead variant has two addresses per chain; the
+message pathway uses the one without that flag. If the metadata cannot be read the command exits 2, never 0.
+On 2026-10-20 both required DVNs on both chains were read back from the chain and found to be the message variant.
