@@ -26,6 +26,10 @@
 //   --require-contract-owner   fail when the adapter owner (which is also its delegate) is an EOA. The owner can
 //                          replace the DVN set or the peer, so in production it is a multisig or a timelock.
 //                          Without the flag an EOA owner is reported as a warning (acceptable on a demo).
+//   --check-dvn-metadata   read LayerZero's public DVN metadata (testnet) and fail when a required DVN is unknown,
+//                          deprecated, or flagged lzReadCompatible (the lzRead variant of a DVN is not the one
+//                          a message pathway uses). Needs network access to metadata.layerzero-api.com; if that
+//                          call fails the run fails, a silent source is not a pass.
 
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -42,8 +46,8 @@ if (!wiring) { console.error('the tracker carries no "wiring" block'); process.e
 const ENDPOINT = tracker.lzEndpointV2;
 
 const CHAINS = [
-  { key: 'source', name: 'Ethereum Sepolia', rpc: opt('--rpc-sepolia', 'https://sepolia.gateway.tenderly.co') },
-  { key: 'destination', name: 'Arbitrum Sepolia', rpc: opt('--rpc-arbitrum', 'https://sepolia-rollup.arbitrum.io/rpc') },
+  { key: 'source', name: 'Ethereum Sepolia', meta: 'sepolia', rpc: opt('--rpc-sepolia', 'https://sepolia.gateway.tenderly.co') },
+  { key: 'destination', name: 'Arbitrum Sepolia', meta: 'arbsep', rpc: opt('--rpc-arbitrum', 'https://sepolia-rollup.arbitrum.io/rpc') },
 ];
 
 // 4-byte selectors of the read functions used below.
@@ -127,6 +131,15 @@ async function discoverComposers(rpc, adapter, from) {
   return [...state].filter(([, on]) => on).map(([a]) => a).sort();
 }
 
+let dvnMetadata = null;
+if (flag('--check-dvn-metadata')) {
+  try {
+    const r = await fetch('https://metadata.layerzero-api.com/v1/metadata/dvns?environment=testnet');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    dvnMetadata = await r.json();
+  } catch (e) { console.error(`DVN metadata unreadable (${e.message}); a silent source is not a pass`); process.exit(2); }
+}
+
 let bad = 0;
 const say = (ok, label) => { console.log(`  ${ok ? 'ok  ' : 'DIFF'}  ${label}`); if (!ok) bad++; };
 
@@ -162,6 +175,16 @@ for (const c of CHAINS) {
       const ok = u.confirmations === p.confirmations && u.requiredCount === p.requiredDVNs.length && u.optionalCount === 255
         && u.threshold === 0 && sameList(u.required, p.requiredDVNs) && sameList(u.optional, p.optionalDVNs);
       say(ok, `${label} ULN: ${u.confirmations} confirmations, required DVN ${u.required.join(',')} (${p.requiredDVNNames.join(',')}), no optional DVN (explicit)`);
+    }
+
+    if (dvnMetadata) {
+      const known = dvnMetadata[c.meta]?.dvns ?? {};
+      for (const [i, d] of p.requiredDVNs.entries()) {
+        const m = Object.entries(known).find(([a]) => lc(a) === lc(d))?.[1];
+        const name = p.requiredDVNNames[i] ?? d;
+        say(!!m && !m.deprecated && !m.lzReadCompatible,
+          `DVN ${name} ${d}: ${m ? `${m.canonicalName} v${m.version}${m.deprecated ? ', DEPRECATED' : ''}${m.lzReadCompatible ? ', lzReadCompatible (not the message pathway variant)' : ', message variant'}` : 'NOT in the testnet metadata'}`);
+      }
     }
 
     const ex = words(await ethCall(c.rpc, p.sendLibrary, SEL.executorConfigs + word(adapter) + num(p.remoteEid)));
