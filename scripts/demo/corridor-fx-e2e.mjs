@@ -155,20 +155,50 @@ const CHAINS = {
   11155111: {
     name: 'Ethereum Sepolia',
     explorer: tracker.source?.explorer || 'https://sepolia.etherscan.io',
-    rpc: opt('--rpc-sepolia', 'https://ethereum-sepolia-rpc.publicnode.com'),
+    rpc: opt('--rpc-sepolia', ''), // empty: chosen by probe among RPC_CANDIDATES below
   },
   421614: {
     name: 'Arbitrum Sepolia',
     explorer: tracker.destination?.explorer || 'https://sepolia.arbiscan.io',
     // an endpoint that serves the state of old blocks, which the replay of the route rule and of the installed
     // policies needs (the official and several other public endpoints answer "historical state not available")
-    rpc: opt('--rpc-arbitrum', 'https://arbitrum-sepolia.gateway.tenderly.co'),
+    rpc: opt('--rpc-arbitrum', ''),
   },
 };
 const T = (tracker.source && tracker.source.contracts) || {};
 const D = (tracker.destination && tracker.destination.contracts) || {};
 const lc = (s) => (s || '').toLowerCase();
 const at = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), tracker);
+
+// Default endpoints, tried in order when no --rpc-* flag is given. Public endpoints differ: some prune old receipts
+// (a missing receipt reads as a failed check), some refuse log ranges over 10,000 blocks. An endpoint is kept only if
+// it answers the right chain id AND serves the receipt of the most recent transaction of the tracker on that chain.
+// A flag always wins and is never replaced.
+const RPC_CANDIDATES = {
+  11155111: ['https://sepolia.drpc.org', 'https://ethereum-sepolia-rpc.publicnode.com'],
+  421614: ['https://arbitrum-sepolia.gateway.tenderly.co', 'https://sepolia-rollup.arbitrum.io/rpc'],
+};
+function lastTxOn(chainId) {
+  let tx = null;
+  for (const p of Object.values(tracker.demonstration_passes || {})) {
+    for (const l of (p && p.legs) || []) if (l.chainId === chainId && /^0x[0-9a-fA-F]{64}$/.test(l.tx || '')) tx = l.tx;
+  }
+  return tx;
+}
+async function probeRpc(chainId, url, tx) {
+  try {
+    const id = parseInt(await rpc(url, 'eth_chainId', []), 16);
+    if (id !== chainId) return false;
+    return !tx || (await rpc(url, 'eth_getTransactionReceipt', [tx])) != null;
+  } catch { return false; }
+}
+for (const [id, list] of Object.entries(RPC_CANDIDATES)) {
+  const c = CHAINS[id];
+  if (c.rpc) continue;
+  const tx = lastTxOn(Number(id));
+  c.rpc = list[0];
+  for (const url of list) if (await probeRpc(Number(id), url, tx)) { c.rpc = url; break; }
+}
 
 // Every 20-byte address in the tracker, with its paths. A receipt target is cross-referenced to a
 // named corridor contract rather than trusted blind; the label prefers the contract sections over

@@ -7,6 +7,22 @@ counterparties, and by the upstream projects it credits (Chainlink, GLEIF, Layer
 source build, no dependencies,
 no demo, and nothing internal.
 
+## Replay in five minutes
+
+Read only. It needs Node 18 or later, a network connection, no key and no dependency.
+
+```
+git clone https://github.com/Aiko-Academy/programmable-compliance && cd programmable-compliance
+node scripts/ci/tous.mjs --rapide          # offline: fingerprints, licences, tracker schema (about 1 second)
+node scripts/demo/wiring-check.mjs         # the LayerZero pathway read back from both chains (about 3 seconds)  
+node scripts/demo/corridor-fx-e2e.mjs      # every demonstration transaction re-read live (about 25 seconds)
+```
+
+Expected: the first prints `surface propre` and `aucun refus`; the second ends with `0 difference`; the third ends with
+`result : every check was made and passed` and exit code 0 (203 checks over 39 transactions on 2026-10-20). Exit code 3
+means a check could not be made because an endpoint did not serve old blocks: pass your own node with `--rpc-sepolia`
+and `--rpc-arbitrum`. Details and the meaning of each check: `RUNBOOK.md`.
+
 ## What the toolkit is
 
 The PC toolkit is best-of-class **by the composability of four bricks**, each a leader in its

@@ -110,15 +110,15 @@ checks:
 | a refusal at arrival leaves nothing behind | `Refused` for the same guid with the decoded reason, no transfer, no completed policy run; the key window is in order (revoked, refused, restored, returned); `ReturnedToSource`, a second guid for the return packet, `ReturnedToPayer` for the exact amount |
 
 What a chain cannot show is printed as `declared` and never counted: a signature that was never made, a prover that
-exits with code 3. The tracker lists under `demonstration_passes.not_played` what these passes do not exercise
-(stale proof, invalid signature or revoked key at the source, listed party at the beneficiary side, other
-amounts); the script prints that list in its summary.
+exits with code 3. The tracker lists under `demonstration_passes.not_played` what these passes do not exercise; the script prints
+that list in its summary.
 
 Exit code: 0 when every check was made and passed; 1 when a check failed; 3 when nothing failed but a check could not
 be made (RPC unreachable or history not served). An endpoint that answers another chain id counts as a failure. A green exit therefore means that all
 checks were made. The replay of reverts, the installed policies, the route quotes and the balances before need the
-state of an old block, which many public endpoints prune: the default Arbitrum Sepolia endpoint serves it, and
-`--rpc-sepolia` and `--rpc-arbitrum` point the script at your own node. `--skip-history` skips those checks
+state of an old block, which many public endpoints prune. Without a flag the script tries a short list of public
+endpoints in order and keeps the first that answers the right chain id and serves the receipt of the most recent
+transaction of the tracker; `--rpc-sepolia` and `--rpc-arbitrum` point it at your own node and are never replaced. `--skip-history` skips those checks
 and says so (exit 0, "not a full result"). The previous generation of the corridor (50 EURX passes, identity gated
 wrappers) is kept under `history` and is not replayed.
 
@@ -174,8 +174,8 @@ registered composers to equal the announced list in `deployments/fx-corridor.jso
 ### Checking the pinned LayerZero pathway
 
 The pathway of the FX corridor is set by the application on both chains: explicit send and
-receive libraries, ULN config (2 confirmations, one required DVN), executor, and enforced gas options. Before,
-only the peer was set and everything else ran on the LayerZero defaults. The expected values are in
+receive libraries, ULN config (2 confirmations, two required DVNs: LayerZero Labs and Horizen), executor, and
+enforced gas options. Before 2026-10-16, only the peer was set and everything else ran on the LayerZero defaults. The expected values are in
 `deployments/fx-corridor.json`, under `wiring`. To read them back from the chains:
 
 ```
@@ -186,6 +186,10 @@ It reads the raw values set by the application (not the merged effective value, 
 setting from an inherited one), prints one line per check, and exits with code 1 if any check differs or if an
 RPC does not answer. It is read only and has no dependency. The script that sets these values is
 `scripts/wiring/WireLZ.s.sol` (see `scripts/wiring/README.md`).
+
+Two options harden the read: `--require-contract-owner` turns the warning "the adapter owner is an EOA" into a failure
+(both adapters are owned by a test Safe since 2026-10-20), and `--check-dvn-metadata` reads LayerZero's public DVN
+metadata and fails on an unknown, deprecated or lzRead-flagged required DVN.
 
 ## 3. On-chain, bytecode against source (participant holding the toolkit)
 
