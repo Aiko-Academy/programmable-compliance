@@ -78,8 +78,8 @@ Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, und
   attestation, the source wrapper refuses the transfer before any lock, and the key is restored right after;
 - `refused_invalid_signature_source_safe_2dvn`: one bit of the node signature is flipped while the key stays active,
   the source wrapper refuses before any lock;
-- `refused_stale_root_safe_2dvn`: the attestation and the sanctions proof are valid but the SAN01 root is past its 24 hour
-  window, the source wrapper refuses before any lock; the root is then republished as version 3;
+- `refused_stale_root_safe_2dvn`: the attestation and the sanctions proof are valid but the SAN01 root is past its freshness
+  window (24 hours when this pass was played, 7 days since 2026-10-21), the source wrapper refuses before any lock; the root is then republished as version 3;
 - `returned_sanctions_beneficiary_safe_2dvn`: the arrival leg carries a valid sanctions proof made for another
   identifier than the beneficiary, the arrival wrapper refuses, the funds go back under a second guid;
 - `conforming_payer_sg1_safe_2dvn`: a payer other than FI FR (FI SG1 pays and receives, an FX conversion for its own
@@ -145,6 +145,19 @@ The delegate of each adapter is the test Safe, and the Endpoint V2 lets the dele
 What this shows: the Safe can nilify, and a nilified nonce is delivered after a fresh verification. What it does NOT
 show: a packet that was verified, then nilified, then re-verified by the production DVNs. Here the production DVNs did not
 re-verify on their own, and the release used a temporary DVN swap that a production setup must not rely on.
+
+### Freshness window of the sanctions root
+
+The sanctions policy of each wrapper refuses a transfer when the SAN01 root is older than the `maxRootAge` of the list
+(`listsOf(subject)`). It was 86400 seconds (24 hours) until 2026-10-21. On that day the owner reconfigured the two deployed
+policies, with `setConfig(subject, rangeMode)` then `addList(subject, registry, listId, 604800, "SAN01")`, so the window is now
+**7 days** (604800 seconds). The policies keep their addresses, their conduits and their consumed nullifiers.
+
+- Sepolia, wrapper source `0x738D...2C84`: `setConfig` `0x24f044b6...cc6f9`, `addList` `0xd17f9923...a0a9a`;
+- Arbitrum Sepolia, wrapper wSGDX `0xd8b0...f40`: `setConfig` `0xa7514f51...4bca`, `addList` `0x67fb60ea...e87c`.
+
+Between the two calls a policy has no list and refuses everything (`no list configured`), so the gap fails closed. The
+window is read from the chain, not from this file: `listsOf` on the policy is the source of truth.
 
 ### Two exchange routes at arrival
 
