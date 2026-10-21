@@ -124,7 +124,7 @@ transaction of the tracker; `--rpc-sepolia` and `--rpc-arbitrum` point it at you
 and says so (exit 0, "not a full result"). The previous generation of the corridor (50 EURX passes, identity gated
 wrappers) is kept under `history` and is not replayed.
 
-### Nilifying a packet through the delegate (drill of 2026-10-21)
+### Nilifying a packet through the delegate (drill of the night of 2026-10-20 to 2026-10-21)
 
 The delegate of each adapter is the test Safe, and the Endpoint V2 lets the delegate of an OApp call `nilify`, `skip`,
 `burn` and `clear`. This was played once on the arrival adapter, Sepolia to Arbitrum Sepolia, with the guid
