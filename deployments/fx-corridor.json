@@ -972,12 +972,12 @@
           "originatingFI": {
             "name": "FI FR",
             "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
-            "role": "pays EUR, identified on Ethereum Sepolia (vLEI + KYB)"
+            "role": "pays EUR, identified on Ethereum Sepolia (KYB entry in the identity registry)"
           },
           "beneficiaryFI": {
             "name": "FI SG1",
             "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
-            "role": "receives SGD, identified on Arbitrum Sepolia (vLEI + KYB)"
+            "role": "receives SGD, identified on Arbitrum Sepolia (KYB entry in the identity registry)"
           }
         },
         "legs": [
@@ -991,7 +991,7 @@
             "chainId": 421614,
             "phase": "swap+deliver",
             "tx": "0xc04792fb39fbfdffb944f30a1ce9571c84a2dab3de71684f63c9fded136620c4",
-            "what": "atomic lzCompose: swap 50 EURX to 73.488516 SGDX at 1.46977 SGD/EUR, then gated delivery to FI SG1 (vLEI verified); reserve EURX released, composer keeps nothing"
+            "what": "atomic lzCompose: swap 50 EURX to 73.488516 SGDX at 1.46977 SGD/EUR, then gated delivery to FI SG1 (identity registry entry checked); reserve EURX released, composer keeps nothing"
           }
         ]
       },
@@ -999,7 +999,7 @@
         "outcome": "refused",
         "quote_sgd_per_eur": 1.46977,
         "beneficiary_delta_sgdx": "0",
-        "reason": "beneficiary FI SG2 not identified on Arbitrum (no vLEI/KYB credential, getIdentity = 0); gated delivery refused by the identity-gated policy",
+        "reason": "beneficiary FI SG2 not identified on Arbitrum (no identity registry entry, getIdentity = 0); gated delivery refused by the identity-gated policy",
         "parties": {
           "originatingFI": {
             "name": "FI FR",
@@ -1037,12 +1037,12 @@
           "originatingFI": {
             "name": "FI FR",
             "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
-            "role": "pays EUR, identified on Ethereum Sepolia (vLEI + KYB)"
+            "role": "pays EUR, identified on Ethereum Sepolia (KYB entry in the identity registry)"
           },
           "beneficiaryFI": {
             "name": "FI SG1",
             "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
-            "role": "receives SGD, identified on Arbitrum Sepolia (vLEI + KYB)"
+            "role": "receives SGD, identified on Arbitrum Sepolia (KYB entry in the identity registry)"
           }
         },
         "legs": [
@@ -1056,7 +1056,7 @@
             "chainId": 421614,
             "phase": "swap+deliver",
             "tx": "0x15ff29bdaac9fcd393a66b00ca784660ffc23d56d5d37828f966469c8317e5ce",
-            "what": "atomic lzCompose on route 1: swap 50 EURX to USDX to 73.481601 SGDX through the two pivot pools, then gated delivery to FI SG1 (vLEI verified); the composer keeps nothing"
+            "what": "atomic lzCompose on route 1: swap 50 EURX to USDX to 73.481601 SGDX through the two pivot pools, then gated delivery to FI SG1 (identity registry entry checked); the composer keeps nothing"
           }
         ]
       },

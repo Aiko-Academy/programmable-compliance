@@ -31,8 +31,8 @@ role, none imposed:
 - **PBM (Policy Wrapper)**: compliance as a detachable layer over an immutable asset.
 - **Chainlink ACE**: the compliance-engine model; certain components are integrated, not the whole
   stack. Credited by reference (`references/chainlink-ace.md`).
-- **vLEI (GLEIF)**: verifiable organisational identity; KYB by vLEI credential
-  (`references/vlei-gleif.md`).
+- **vLEI (GLEIF)**: verifiable organisational identity. Integration in progress: today the toolkit
+  checks an administered LEI registry, not a vLEI credential (`references/vlei-gleif.md`).
 - **LayerZero**: the cross-chain transport (`references/layerzero.md`).
 
 The Policy Wrapper makes the **asset** agnostic (any token, even immutable or foreign, can be governed
