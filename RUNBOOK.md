@@ -78,6 +78,8 @@ Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, und
   attestation, the source wrapper refuses the transfer before any lock, and the key is restored right after;
 - `refused_invalid_signature_source_safe_2dvn`: one bit of the node signature is flipped while the key stays active,
   the source wrapper refuses before any lock;
+- `refused_stale_root_safe_2dvn`: the attestation and the sanctions proof are valid but the SAN01 root is past its 24 hour
+  window, the source wrapper refuses before any lock; the root is then republished as version 3;
 - `returned_sanctions_beneficiary_safe_2dvn`: the arrival leg carries a valid sanctions proof made for another
   identifier than the beneficiary, the arrival wrapper refuses, the funds go back under a second guid;
 - `conforming_payer_sg1_safe_2dvn`: a payer other than FI FR (FI SG1 pays and receives, an FX conversion for its own
@@ -121,6 +123,28 @@ endpoints in order and keeps the first that answers the right chain id and serve
 transaction of the tracker; `--rpc-sepolia` and `--rpc-arbitrum` point it at your own node and are never replaced. `--skip-history` skips those checks
 and says so (exit 0, "not a full result"). The previous generation of the corridor (50 EURX passes, identity gated
 wrappers) is kept under `history` and is not replayed.
+
+### Nilifying a packet through the delegate (drill of 2026-10-21)
+
+The delegate of each adapter is the test Safe, and the Endpoint V2 lets the delegate of an OApp call `nilify`, `skip`,
+`burn` and `clear`. This was played once on the arrival adapter, Sepolia to Arbitrum Sepolia, with the guid
+`0x2af5d78f5c0df5d2f5770f61e1d8546bfdf9a4c1e5522356b84e8e6ef717274a` (1000 EURX, route 1), and it is NOT a tracker pass:
+
+- the Safe nilified the NEXT nonce (15) before it was sent, with the empty payload hash, which the Endpoint allows for a
+  nonce that is not yet verified: tx `0x419e7942bfd8c2f53805890c31e2ef8fc9bd3d3f18ba9a5fd6dc8e399bd2954d` on Arbitrum
+  Sepolia, and the Endpoint then stored the nil hash for that nonce;
+- the message was sent (source tx `0x17861b0bb21ee73cb7d898b206e42a71de241a8c49f6930177d247268cd27d96`). In the next 25
+  minutes neither required DVN verified it, while the same DVNs verified other applications' packets on the same
+  library. The pathway was therefore held at nonce 15;
+- it was released by hand: the Safe replaced the required DVN of the receive library by the deployer account
+  (`0xa695a726...bbb67`), that account called `verify` (`0xe70f43c0...75d44`) and `commitVerification`
+  (`0x9f67e194...afe607`), the Endpoint stored the real payload hash in place of the nil one, and the Safe restored the
+  two required DVNs (`0xb01c1bfc...abd907`, `getConfig` read back identical to the saved one);
+- LayerZero's executor then delivered and composed the message: 1468.511681129168327548 wSGDX, the quoted amount.
+
+What this shows: the Safe can nilify, and a nilified nonce is delivered after a fresh verification. What it does NOT
+show: a packet that was verified, then nilified, then re-verified by the production DVNs. Here the production DVNs did not
+re-verify on their own, and the release used a temporary DVN swap that a production setup must not rely on.
 
 ### Two exchange routes at arrival
 

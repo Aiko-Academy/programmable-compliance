@@ -322,7 +322,6 @@
       "guid": "0xe25843847cbbde6e549c4afbbd70b3274a08de3a7710c46dd44a5f4775d610bd"
     },
     "not_played": [
-      "a proof past its freshness window (stale root): checked only by a policy read on a test instance, not by a wrapper transaction",
       "a party actually ON the list at the beneficiary side: no snapshot listing a party was published; the refusal is played with a valid proof made for another identifier (a listed party obtains no proof, the prover exits with code 3)",
       "any amount other than 500 and 1000 EURX"
     ],
@@ -690,6 +689,39 @@
       "sanctions": "both parties proven absent from the public sanctions list SAN01 by a Groth16 non-membership proof, verified on-chain by the wrapper policy of each chain",
       "guid": "0xe551a972bfc5498b91e6731ee55c8c34ef8e31d41943995a79dd4853daa28166",
       "note": "Played on 2026-10-20 at 10:15 UTC with FI SG1 as the payer (funded with gas and 1000 EURX the same day)."
+    },
+    "refused_stale_root_safe_2dvn": {
+      "outcome": "refused",
+      "amount_eurx": "1000",
+      "beneficiary_delta_sgdx": "0",
+      "reason": "the attestation and the sanctions proof are valid, but the SAN01 root they rely on was published more than 24 hours earlier (version 2, published 2026-10-19 at 23:40:24 UTC, past its window at 23:40:24 UTC on 2026-10-20): the sanctions policy of the source wrapper refuses the gated transfer before any lock.",
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "would receive SGD"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "expect_revert",
+          "tx": "0x446b6663c0af40272783185dcb7690ed0b7b1d117fb712a9e404efeb43e9159f",
+          "what": "transfer reverted: the ZkSanctionsWrapperPolicy of the source wrapper reports that the SAN01 sanctions root is stale; nothing was locked, balances identical before and after",
+          "expected_revert": {
+            "error": "PolicyRunRejected",
+            "selector": "transferFrom",
+            "policy": "zk.source.ZkSanctionsWrapperPolicy",
+            "contains": "sanctions root is stale"
+          }
+        }
+      ],
+      "note": "Played on 2026-10-20 at 23:45 UTC, five minutes after the window closed. The root was then republished as version 3."
     }
   },
   "wiring": {
