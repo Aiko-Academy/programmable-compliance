@@ -213,6 +213,26 @@ What this shows: the Safe can nilify, and a nilified nonce is delivered after a 
 show: a packet that was verified, then nilified, then re-verified by the production DVNs. Here the production DVNs did not
 re-verify on their own, and the release used a temporary DVN swap that a production setup must not rely on.
 
+Recovery after a nilify (answer of LayerZero, 2026-10-22). A nilify is followed by a new verification only if the DVNs
+are asked for one: LayerZero re-pings the DVNs for that packet. The off-chain workflow they published (swimlanes of
+the Essence DVN) starts from the `PacketSent` event, waits for block confirmations, collects the signatures, then calls
+`verify()` on the receive library; the committer calls `commitVerification()` once every required DVN has verified.
+Nothing in that flow listens to `nilify`. Reading: the verification is triggered once per `PacketSent`, so a nonce
+nilified before or after it stays held until someone asks for a new verification. This is our reading of the flow, not
+a statement of LayerZero.
+
+To ask for the re-verification, send LayerZero:
+
+- the source and destination endpoint ids, the sender and the receiver (the two adapters);
+- the nonce, the guid and the source transaction of the `PacketSent`;
+- the payload hash read on the source chain;
+- the nilify transaction on the destination chain.
+
+Not settled: whether the request also reaches the second required DVN (Horizen) or only LayerZero Labs, the channel and
+the delay, and whether a packet already verified and then blocked behaves like the nonce of the drill above.
+Do not use the temporary DVN swap of the drill as a recovery path: it makes the delegate the root of trust of the
+pathway.
+
 ### Freshness window of the sanctions root
 
 The sanctions policy of each wrapper refuses a transfer when the SAN01 root is older than the `maxRootAge` of the list
