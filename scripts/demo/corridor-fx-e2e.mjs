@@ -25,11 +25,20 @@
 //     out-of-gas); the balances of the payer and of the lock are read before and after;
 //   - for the arrival refusal, the reason carried by the Refused event, the absence of any transfer
 //     and of any completed policy run, and the order of the key revocation, the refusal, the
-//     restoration and the return.
+//     restoration and the return;
+//   - for a pass of the vLEI generation (a gated transfer at or after the creation block of the
+//     VleiAttestationPolicy on its chain, `generation.vlei`), the counterparty check: the policy is
+//     installed LAST on the wrapper for transfer and transferFrom, its configOf (enabled, side, maxAge,
+//     roleMask, rootAid) is the one the tracker names, the attester is a registered verifier (all read at
+//     the block before), and the receipt carries exactly one VleiReliedUpon whose wrapper, wallet, LEI,
+//     role, root, verifier, time of verification and mandate match the `counterparty_check` of the pass;
+//     the same uetr links the payer side and the beneficiary side. Earlier passes are verified as before:
+//     the policy did not exist then, so it is not required.
 //
 // What it cannot show, and says so: a check made off-chain by an institution node (a signature that
 // was never made, a prover that exits with code 3) leaves nothing on a chain. Those statements are
-// printed as "declared" and never counted as checks.
+// printed as "declared" and never counted as checks. The vLEI refusals that stop before any
+// transaction (`vlei_refusals_without_transaction`) are printed the same way.
 //
 // Read only. No build, no private key, no local node, no dependency: JSON-RPC over fetch, and a small
 // Keccak-256 inside this file to derive event and error selectors from the ABIs of abi/.
@@ -131,6 +140,7 @@ const EV = {
   ReturnedToSource: evTopic('ArrivalComposerFX', 'ReturnedToSource'),
   ReturnedToPayer: evTopic('ReturnReceiver', 'ReturnedToPayer'),
   PolicyRunComplete: evTopic('PolicyManager', 'PolicyRunComplete'),
+  VleiReliedUpon: evTopic('VleiAttestationPolicy', 'VleiReliedUpon'),
   // LayerZero Endpoint V2 events (the endpoint is LayerZero's, not part of abi/): fixed by its public interface.
   PacketSent: topicOf('PacketSent(bytes,bytes,address)'),
   ComposeDelivered: topicOf('ComposeDelivered(address,address,bytes32,uint16)'),
@@ -140,6 +150,10 @@ const SEL = {
   transferFrom: selOf('transferFrom(address,address,uint256)'),
   balanceOf: selOf('balanceOf(address)'),
   getPolicies: selOf(sigOf(abiItem('PolicyManager', 'function', 'getPolicies'))),
+  configOf: selOf(sigOf(abiItem('VleiAttestationPolicy', 'function', 'configOf'))),
+  isVerifier: selOf(sigOf(abiItem('VleiAttestationPolicy', 'function', 'isVerifier'))),
+  SIDE_FROM: selOf(sigOf(abiItem('VleiAttestationPolicy', 'function', 'SIDE_FROM'))),
+  SIDE_TO: selOf(sigOf(abiItem('VleiAttestationPolicy', 'function', 'SIDE_TO'))),
 };
 const ERR = {
   PolicyRunRejected: errSel('PolicyManager', 'PolicyRunRejected'),
@@ -289,15 +303,21 @@ function policyRan(rcpt, manager, wrapper, selector) {
   return rcpt.logs.some((g) => g.topics[0] === EV.PolicyRunComplete && lc(g.address) === lc(manager)
     && g.topics[2] === pad(wrapper) && g.topics[3] === sel4(selector));
 }
-// The sanctions policy is installed on the wrapper for that selector, read at the block before.
-async function policyInstalled(chainId, manager, wrapper, selector, policy, block, name) {
+// A policy is installed on the wrapper for that selector, read at the block before. `last`: it must also be the LAST
+// entry of the list (the vLEI policy, appended after the sanctions policy).
+async function policyInstalled(chainId, manager, wrapper, selector, policy, block, name, { last = false } = {}) {
   if (SKIP_HISTORY) return skip(`${name} installed on the wrapper (history skipped)`);
   const r = await ethCall(chainId, call(manager, SEL.getPolicies, wrapper, selector.padEnd(66, '0')), hexBlock(block - 1));
   if (!r.ok) return unv(`policies installed on the wrapper could not be read at block ${block - 1} (${r.message})`);
   const h = r.result, n = Number(wordAt(h, 1));
   const list = []; for (let i = 0; i < n; i++) list.push('0x' + h.slice(2 + (2 + i) * 64 + 24, 2 + (3 + i) * 64));
-  return verdict(list.map(lc).includes(lc(policy)), `${name} ${short(policy)} is installed on the wrapper policy chain (${n} policies) when the transfer runs`,
-    `${name} ${short(policy)} is NOT among the ${n} policies installed on the wrapper`);
+  const pos = list.map(lc).indexOf(lc(policy));
+  if (!last) {
+    return verdict(pos >= 0, `${name} ${short(policy)} is installed on the wrapper policy chain (${n} policies) when the transfer runs`,
+      `${name} ${short(policy)} is NOT among the ${n} policies installed on the wrapper`);
+  }
+  return verdict(pos >= 0 && pos === n - 1, `${name} ${short(policy)} is the LAST of the ${n} policies installed on the wrapper when the transfer runs`,
+    pos < 0 ? `${name} ${short(policy)} is NOT among the ${n} policies installed on the wrapper` : `${name} ${short(policy)} is at position ${pos + 1} of ${n}, not last`);
 }
 async function balanceOf(chainId, token, holder, block) {
   const r = await ethCall(chainId, call(token, SEL.balanceOf, holder), hexBlock(block));
@@ -355,6 +375,115 @@ function routeCheck(p, block, delivered) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// vLEI counterparty check (`generation.vlei`). A gated transfer at or after the creation block of the policy on its
+// chain belongs to the vLEI generation: the pass must carry its `counterparty_check`, and the receipt must show what the
+// policy relied upon. Earlier passes are verified as before: the policy did not exist, it is not required.
+// ---------------------------------------------------------------------------------------------
+const VLEI = tracker.generation?.vlei || null;
+const vleiSide = (chainId) => (VLEI ? (chainId === 11155111 ? VLEI.source : chainId === 421614 ? VLEI.destination : null) : null);
+const inVleiGeneration = (chainId, block) => { const v = vleiSide(chainId); return !!v && Number.isInteger(v.block) && block >= v.block; };
+const isoOf = (t) => new Date(t * 1000).toISOString().replace('.000Z', 'Z');
+// the digest the tracker pins is the keccak256 of the root identifier it names (recomputed here, not trusted)
+const ROOT_DIGEST_OK = !!VLEI && '0x' + keccak256(String(VLEI.pinned_root_aid || '')) === lc(VLEI.pinned_root_keccak256);
+
+async function vleiChecks(l, p, rcpt, block, sideKey, ctx) {
+  const v = vleiSide(l.chainId);
+  const src = l.chainId === 11155111;
+  const rec = p.counterparty_check?.[sideKey];
+  if (!inVleiGeneration(l.chainId, block)) {
+    return [bad(`the pass records a counterparty_check, but block ${block} precedes the vLEI policy on this chain (created at block ${v?.block ?? '?'})`)];
+  }
+  if (!rec) return [bad(`block ${block} is in the vLEI generation (policy created at block ${v.block}) but the pass carries no counterparty_check.${sideKey}`)];
+  const policy = at(v.policy);
+  const wrapper = src ? T.wEURX_PolicyWrapper : D.wSGDX_delivery_PolicyWrapper;
+  const manager = src ? T.AtelierPolicyManager : D.AtelierPolicyManager;
+  const party = src ? parties(p).fi : parties(p).ben;
+  const out = [];
+
+  // the policy is installed LAST on the wrapper, for both gated selectors, when the transfer runs
+  for (const sel of ['transfer', 'transferFrom']) {
+    out.push(await policyInstalled(l.chainId, manager, wrapper, SEL[sel], policy, block, `vLEI attestation policy (${sel})`, { last: true }));
+  }
+  // its configuration for this wrapper, and the registration of the attester, at the block before
+  let roleMask = v.role_mask, maxAge = VLEI.max_age_seconds;
+  if (SKIP_HISTORY) out.push(skip('configOf of the vLEI policy and registration of the verifier at the block before (history skipped)'));
+  else {
+    const sideName = /^from\b/.test(v.side || '') ? 'SIDE_FROM' : /^to\b/.test(v.side || '') ? 'SIDE_TO' : null;
+    const before = hexBlock(block - 1);
+    const c = await ethCall(l.chainId, call(policy, SEL.configOf, wrapper), before);
+    const sd = sideName ? await ethCall(l.chainId, call(policy, SEL[sideName]), before) : { unavailable: true, message: `side "${v.side}" names neither from nor to` };
+    const iv = await ethCall(l.chainId, call(policy, SEL.isVerifier, VLEI.verifier), before);
+    if (!c.ok || !sd.ok) out.push(unv(`configOf of the vLEI policy could not be read at block ${block - 1} (${String((!c.ok ? c.message : sd.message) || 'revert').slice(0, 80)})`));
+    else {
+      const [en, side, age, mask, root] = [0, 1, 2, 3, 4].map((i) => wordAt(c.result, i));
+      const rootHex = '0x' + root.toString(16).padStart(64, '0');
+      const why = [];
+      if (en !== 1n) why.push('not enabled');
+      if (side !== BigInt(sd.result)) why.push(`side ${side}, expected ${BigInt(sd.result)} (${sideName})`);
+      if (Number(age) !== VLEI.max_age_seconds) why.push(`maxAge ${age}, expected ${VLEI.max_age_seconds}`);
+      if (Number(mask) !== v.role_mask) why.push(`roleMask ${mask}, expected ${v.role_mask}`);
+      if (lc(rootHex) !== lc(VLEI.pinned_root_keccak256)) why.push(`rootAid ${short(rootHex)}, expected ${short(VLEI.pinned_root_keccak256)}`);
+      if (!ROOT_DIGEST_OK) why.push('generation.vlei.pinned_root_keccak256 is not the keccak256 of generation.vlei.pinned_root_aid');
+      roleMask = Number(mask); maxAge = Number(age);
+      out.push(why.length ? bad(`configOf of the wrapper differs from the tracker: ${why.join('; ')}`)
+        : ok(`configOf of the wrapper: enabled, side ${side} (${sideName}, the ${sideKey}), maxAge ${age} s, roleMask ${mask}, rootAid = keccak256 of the pinned root ${VLEI.pinned_root_aid}`));
+    }
+    out.push(!iv.ok ? unv(`isVerifier could not be read at block ${block - 1} (${String(iv.message || 'revert').slice(0, 80)})`)
+      : verdict(BigInt(iv.result) === 1n, `the attester ${short(VLEI.verifier)} is a registered verifier of the policy (isVerifier true)`, `isVerifier(${VLEI.verifier}) is false at block ${block - 1}`));
+  }
+
+  // what the policy relied upon: exactly one VleiReliedUpon in this receipt, from the policy of this chain
+  const all = evs(rcpt, EV.VleiReliedUpon), mine = all.filter((g) => lc(g.address) === lc(policy));
+  const named = lc(rec.relied_upon?.tx) === lc(l.tx) && rec.relied_upon?.chainId === l.chainId && lc(at(rec.relied_upon?.policy || '') || '') === lc(policy);
+  out.push(verdict(all.length === 1 && mine.length === 1 && named,
+    `exactly one VleiReliedUpon in the receipt, emitted by the vLEI policy ${short(policy)}, in the transaction the pass names for it`,
+    `${all.length} VleiReliedUpon in the receipt (${mine.length} from the vLEI policy of this chain), expected exactly one${named ? '' : '; counterparty_check.' + sideKey + '.relied_upon does not name this transaction and policy'}`));
+  if (mine.length !== 1) return out;
+  const g = mine[0], d = g.data;
+  const e = {
+    subject: topicAddr(g.topics[1]), uetr: g.topics[2].slice(0, 34), wallet: topicAddr(g.topics[3]),
+    lei: Buffer.from(d.slice(2, 42), 'hex').toString('latin1'), role: Number(wordAt(d, 1)),
+    root: '0x' + d.slice(2 + 4 * 64, 2 + 5 * 64), mandate: wordAt(d, 5), verifiedAt: Number(wordAt(d, 6)),
+    verifier: '0x' + d.slice(2 + 7 * 64 + 24, 2 + 8 * 64),
+  };
+  out.push(verdict(lc(e.subject) === lc(wrapper) && lc(e.wallet) === lc(rec.wallet) && lc(rec.wallet) === lc(party),
+    `relied upon for wallet ${short(e.wallet)}, the ${sideKey === 'payer' ? 'originating' : 'beneficiary'} FI as recorded, on the ${src ? 'source wEURX' : 'delivery wSGDX'} wrapper`,
+    `VleiReliedUpon names wrapper ${e.subject} and wallet ${e.wallet}; the pass records wallet ${rec.wallet} for the party ${party}`));
+  out.push(verdict(e.lei === rec.lei_presented && rec.lei_presented === rec.lei_expected,
+    `LEI ${e.lei}: the LEI presented, and the LEI the counterparty expected`,
+    `the event carries LEI "${e.lei}"; the pass records "${rec.lei_presented}" presented and "${rec.lei_expected}" expected`));
+  out.push(verdict(e.role === rec.role && ((roleMask >> e.role) & 1) === 1,
+    `role ${e.role} = ${rec.role_name || 'unnamed'}, as recorded, accepted by the role mask ${roleMask}`,
+    `role ${e.role} in the event, ${rec.role} recorded, role mask ${roleMask}`));
+  out.push(verdict(lc(e.root) === lc(VLEI.pinned_root_keccak256) && lc(e.verifier) === lc(VLEI.verifier) && lc(p.counterparty_check.verifier || VLEI.verifier) === lc(VLEI.verifier),
+    `chained to the pinned root and attested by the registered verifier ${short(VLEI.verifier)}`,
+    `root ${short(e.root)} or verifier ${e.verifier} differs from generation.vlei`));
+  let blk = null;
+  try { blk = await rpc(CHAINS[l.chainId].rpc, 'eth_getBlockByNumber', [hexBlock(block), false]); } catch { /* reported below */ }
+  const recT = Date.parse(rec.verifiedAt) / 1000;
+  if (!blk) out.push(unv(`the time of block ${block} could not be read, so the freshness of the verification is not checked`));
+  else {
+    const ts = parseInt(blk.timestamp, 16), age = ts - e.verifiedAt;
+    out.push(verdict(e.verifiedAt === recT && age >= 0 && age <= maxAge,
+      `verified off chain at ${isoOf(e.verifiedAt)} as recorded, ${age} s before the block: within maxAge ${maxAge} s`,
+      `verifiedAt ${isoOf(e.verifiedAt)} in the event, ${rec.verifiedAt} recorded, ${age} s before the block (maxAge ${maxAge} s)`));
+  }
+  const hasMandate = !!rec.mandate;
+  out.push(verdict((e.mandate !== 0n) === hasMandate,
+    hasMandate ? 'the event carries a mandate digest: an agent acting under the recorded mandate' : 'no mandate digest: the officer acts in its own role, as recorded',
+    hasMandate ? 'the pass records a mandate, but the event carries no mandate digest' : 'the event carries a mandate digest that the pass does not record'));
+  if (sideKey === 'payer') {
+    ctx.uetr = e.uetr;
+    out.push(verdict(lc(e.uetr) === lc(p.uetr), `uetr ${e.uetr}, the payment identifier the pass records`, `uetr ${e.uetr} in the event, ${p.uetr} recorded`));
+  } else {
+    out.push(verdict(lc(e.uetr) === lc(p.uetr) && lc(e.uetr) === lc(ctx.uetr || ''),
+      `LINK: uetr ${e.uetr}, the same payment identifier as the payer side on the source chain`,
+      `uetr ${e.uetr} in the event, ${p.uetr} recorded, ${ctx.uetr || 'none'} on the payer side`));
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------------------------
 // Legs. Each returns a list of checks; `ctx` carries the guids and blocks of the pass from leg to leg.
 // ---------------------------------------------------------------------------------------------
 const wei = (p) => toWei(p.amount_eurx);
@@ -407,6 +536,7 @@ async function legChecks(l, p, rcpt, txn, ctx) {
       'the policy chain of the wEURX wrapper ran to completion on transferFrom (PolicyRunComplete): every installed policy accepted before the token moved',
       'no PolicyRunComplete for the wEURX wrapper on transferFrom'));
     out.push(await policyInstalled(l.chainId, T.AtelierPolicyManager, T.wEURX_PolicyWrapper, SEL.transferFrom, tracker.zk.source.ZkSanctionsWrapperPolicy, block, 'sanctions non-membership policy'));
+    if (inVleiGeneration(l.chainId, block) || p.counterparty_check) out.push(...await vleiChecks(l, p, rcpt, block, 'payer', ctx));
     const sent = evs(rcpt, EV.OFTSent, T.SRC_ADAPTER_FX)[0];
     if (!sent) out.push(bad('no OFTSent from the source adapter: nothing was sent through LayerZero'));
     else {
@@ -432,6 +562,7 @@ async function legChecks(l, p, rcpt, txn, ctx) {
     out.push(verdict(policyRan(rcpt, D.AtelierPolicyManager, w, SEL.transfer),
       'the policy chain of the wSGDX wrapper ran to completion on the delivery (PolicyRunComplete): the payee is verified before the token moves', 'no PolicyRunComplete for the wSGDX wrapper on the delivery'));
     out.push(await policyInstalled(l.chainId, D.AtelierPolicyManager, w, SEL.transfer, tracker.zk.destination.ZkSanctionsWrapperPolicy, block, 'sanctions non-membership policy'));
+    if (inVleiGeneration(l.chainId, block) || p.counterparty_check) out.push(...await vleiChecks(l, p, rcpt, block, 'beneficiary', ctx));
     // Route 0 swaps in the direct pool; route 1 swaps through the two USDX pivot pools. Each pool must receive and
     // pay out in this transaction; the composer must never hold USDX (it exists only inside the router call), and
     // the composer takes part in the transaction (so "never holds USDX" is not vacuous).
@@ -570,7 +701,11 @@ async function pass(title, p) {
   if (p.reason) console.log(`  reason: ${p.reason}`);
   if (p.amount_eurx) console.log(`  amount: ${p.amount_eurx} EURX`);
   console.log(`  beneficiary delta: +${p.beneficiary_delta_sgdx ?? 0} SGDX`);
-  const ctx = { guid: null, guid2: null, blocks: {} };
+  for (const k of ['payer', 'beneficiary']) {
+    const c = p.counterparty_check?.[k];
+    if (c) console.log(`  counterparty check, ${k}: LEI ${c.lei_presented} presented, ${c.lei_expected} expected, role ${c.role} = ${c.role_name || 'unnamed'}, verified ${c.verifiedAt}${c.mandate ? `, mandate up to ${c.mandate.max_amount_eurx} ${c.mandate.asset}` : ''}`);
+  }
+  const ctx = { guid: null, guid2: null, uetr: null, blocks: {} };
   for (const l of p.legs) await leg(l, p, ctx);
   // returned pass: the order of the key window on the arrival chain (revoked, refused, restored, returned)
   const b = ctx.blocks;
@@ -601,6 +736,8 @@ const TITLES = {
   refused_replay: 'refused at the source (replay of a settled pass)',
   refused_forged_proof: 'refused at the source (forged proof)',
   returned: 'returned pass (arrival refusal, then funds returned to the payer)',
+  conforming_vlei: 'conforming pass with the vLEI counterparty check (an officer on each side)',
+  conforming_vlei_agent_mandate: 'conforming pass with the vLEI counterparty check (the payer acts through an agent under a mandate)',
 };
 for (const [key, p] of Object.entries(dp)) {
   if (!p || typeof p !== 'object' || !p.legs) continue;
@@ -611,6 +748,16 @@ console.log('\n-- summary --');
 console.log('  conforming: wrap, gated transfer and lock, one guid carried by LayerZero, swap at the arrival pivot on the route the rule picks, gated delivery, unwrap');
 console.log('  refused   : each refusal reverted at the source, for the reason the tracker names, before any lock; the payer balance and the lock are unchanged');
 if (dp.returned) console.log('  returned  : the refused value went back through the bridge under a second guid, the reserve was restored and the payer was made whole');
+if (VLEI) console.log('  vLEI      : in the passes of the vLEI generation, the vLEI policy is the last policy of both wrappers, configured as the tracker says, with a registered verifier, and each gated transfer relied on exactly one vLEI attestation of the controlled party (VleiReliedUpon), linked across the two chains by the uetr');
+const noTx = Array.isArray(dp.vlei_refusals_without_transaction) ? dp.vlei_refusals_without_transaction : [];
+if (noTx.length) {
+  console.log('  vLEI refusals stopped before any transaction (nothing on a chain to re-read; printed as declared, not checks):');
+  for (const r of noTx) {
+    console.log(`    ${PREFIX.declared}  ${r.name}: ${r.reason}`);
+    for (const ev of r.read_only_evidence || []) console.log(`                    ${ev}`);
+    tally.declared++;
+  }
+}
 if (Array.isArray(dp.not_played) && dp.not_played.length) {
   console.log('  not played in these passes (so not shown by this script):');
   for (const n of dp.not_played) console.log(`    - ${n}`);

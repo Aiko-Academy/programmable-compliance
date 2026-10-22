@@ -3,7 +3,30 @@
   "deployed": "2026-10-14",
   "generation": {
     "date": "2026-10-18",
-    "note": "Second generation of the corridor contracts. The previous generation (2026-10-14 to 2026-10-17) is kept under \"history\" and is not replayed. Compliance model of this generation: every check (sanctions, customer due diligence, beneficiary confirmation) is made OFF-CHAIN by each financial institution node, which signs the result; the Policy Wrapper only verifies the proofs carried by the transfer, on-chain, before the wrapped token moves. There is no on-chain identity registry and no identity policy. Proofs are bound to a leg and a chain, so a proof set travels with the transfer from one chain to the other."
+    "note": "Second generation of the corridor contracts. The previous generation (2026-10-14 to 2026-10-17) is kept under \"history\" and is not replayed. Compliance model of this generation: every check (sanctions, customer due diligence, beneficiary confirmation) is made OFF-CHAIN by each financial institution node, which signs the result; the Policy Wrapper only verifies the proofs carried by the transfer, on-chain, before the wrapped token moves. There is no on-chain identity registry. Since 2026-10-22 the counterparty check is made by a policy that verifies a signed vLEI attestation, not a registry entry (see \"vlei\" below). Proofs are bound to a leg and a chain, so a proof set travels with the transfer from one chain to the other.",
+    "vlei": {
+      "date": "2026-10-22",
+      "note": "VleiAttestationPolicy (MIT, abi/VleiAttestationPolicy.json) is appended last to the policy lists (transfer and transferFrom) of the source wEURX, where it checks the payer (roles OOR, or agent under a bounded mandate), and of the delivery wSGDX, where it checks the beneficiary (roles OOR or ECR). Before value moves it verifies an EIP-712 attestation signed by a registered off-chain verifier after a KERI/ACDC verification of the party's vLEI presentation and of a two-way wallet binding. The attestation is bound to the transfer (uetr, wallet, asset, chain), is at most 3600 seconds old and is used once; the policy then emits VleiReliedUpon. The pinned root is a TEST root, not GLEIF; the LEIs are fictitious. The chain verifies the verifier's signature, not KERI or ACDC. See references/vlei-gleif.md.",
+      "verifier": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+      "pinned_root_aid": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+      "pinned_root_keccak256": "0x91e842c42d075f74474f4d818c6204664c073141712a384ecc9555ea9472b686",
+      "max_age_seconds": 3600,
+      "source": {
+        "policy": "source.contracts.VleiAttestationPolicy",
+        "side": "from (payer)",
+        "role_mask": 10,
+        "conduit": "source.contracts.RETURN_RECEIVER (rail infrastructure, not a party, not checked)",
+        "creation_tx": "0x3535fe76ce0792c6e0d57b93094aee4e5517651bafa06db814672f06839b2afc",
+        "block": 11965986
+      },
+      "destination": {
+        "policy": "destination.contracts.VleiAttestationPolicy",
+        "side": "to (beneficiary)",
+        "role_mask": 6,
+        "creation_tx": "0xe356c5720a387b25e9c02adfe17afcbb2542544e985deec24d9a51c45ff3b95a",
+        "block": 321558108
+      }
+    }
   },
   "note": "OFT EURX DEDIE au corridor FX (couple d'adapters propre) ; le corridor 1:1 des traceurs 11155111.json / 421614.json reste intact. Le change se fait a la destination dans le composeur, gate par la conformite. TokenRep de demonstration, PAS de monnaie de banque centrale.",
   "reference_fx": {
@@ -41,7 +64,8 @@
       "AtelierEnvelopeBindingPolicy": "0xB00C6179b72B5D47FaB2B0839d16c122F08E3627",
       "TestAttestationValidatorPolicy": "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4",
       "BeneficiaryGate": "0xE833f363AbB0f601eA3d0Fcbb871C1cC589f236B",
-      "AtelierZkSanctionsWrapperPolicy": "0xE01A715f3C9bF529f50d93561ec9Ac369fe53376"
+      "AtelierZkSanctionsWrapperPolicy": "0xE01A715f3C9bF529f50d93561ec9Ac369fe53376",
+      "VleiAttestationPolicy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237"
     }
   },
   "destination": {
@@ -65,7 +89,8 @@
       "AtelierRequiredChecksPolicy": "0x125EbDCF73B39a8fb28DC49024d34083FC9eC9f3",
       "AtelierEnvelopeBindingPolicy": "0x481f3a553F5481553A6a8dA1D5708A4c91f9aD78",
       "TestAttestationValidatorPolicy": "0x73f7587bed5c0988dBA9513e61CACa2016edD98e",
-      "AtelierZkSanctionsWrapperPolicy": "0xF06E68B2ba0596b6b5aceaf14A73e2df46D51057"
+      "AtelierZkSanctionsWrapperPolicy": "0xF06E68B2ba0596b6b5aceaf14A73e2df46D51057",
+      "VleiAttestationPolicy": "0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc"
     },
     "uniswapV3Canonical": {
       "UniswapV3Factory": "0x248AB79Bbb9bC29bB72f7Cd42F17e054Fc40188e",
@@ -323,7 +348,8 @@
     },
     "not_played": [
       "a party actually ON the list at the beneficiary side: no snapshot listing a party was published; the refusal is played with a valid proof made for another identifier (a listed party obtains no proof, the prover exits with code 3)",
-      "any amount other than 500 and 1000 EURX"
+      "any amount other than 500 and 1000 EURX",
+      "a vLEI refusal made by the chain itself during a transfer: the four vLEI refusals stop before any transaction (no attestation is signed, or the read-only runFor of the policy refuses), see vlei_refusals_without_transaction"
     ],
     "conforming_safe_2dvn": {
       "outcome": "settled",
@@ -722,7 +748,269 @@
         }
       ],
       "note": "Played on 2026-10-20 at 23:45 UTC, five minutes after the window closed. The root was then republished as version 3."
-    }
+    },
+    "conforming_vlei": {
+      "outcome": "settled",
+      "route": 0,
+      "amount_eurx": "1000",
+      "rate_sgd_per_eur": 1.4683422912698794,
+      "beneficiary_delta_sgdx": "1468.342291269879293321",
+      "gap_to_reference_bps": -10.97,
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia; its officer (OOR) presented a vLEI, checked before the send"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "receives SGD, node signed the arrival attestation; its officer (OOR) presented a vLEI, checked before the send"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "wrap",
+          "tx": "0x83c530d9875e33954a74230e617ed690b8aef8c54b310e901eda0ecacec48ce0",
+          "what": "FI FR wraps 1000 EURX into wEURX (Policy Wrapper, deposit)"
+        },
+        {
+          "chainId": 11155111,
+          "phase": "lock",
+          "tx": "0x231ca7ffaf50927b090fdbd48bfb5c4d016ee087cc673e83d7096d35626858db",
+          "what": "transferFrom payer to the source adapter, gated by the wrapper policy chain (required checks, leg binding, attestation validator, sanctions non-membership proof, then, last, the vLEI attestation of the payer, which emits VleiReliedUpon); the adapter unwraps and locks 1000 EURX; the beneficiary gate checked the arrival proofs BEFORE the debit"
+        },
+        {
+          "chainId": 421614,
+          "phase": "swap+deliver",
+          "tx": "0x4ebe2d5ba9ce5ae3736421e7ce573065294420b1320f9a6a0b7348fa9f674f73",
+          "what": "atomic lzCompose on route 0 (direct pool): wEURX unwrapped, 1000 EURX swapped through the direct EURX/SGDX pool, SGDX wrapped, wSGDX delivered to FI SG1 under the wrapper policy chain, the vLEI attestation of the beneficiary last (VleiReliedUpon)"
+        },
+        {
+          "chainId": 421614,
+          "phase": "unwrap",
+          "tx": "0xdff0f07114de32a8b66b2a3e9badcd83c9482abf3479f06ae659a7cfcd6accd8",
+          "what": "FI SG1 unwraps the delivered wSGDX into SGDX"
+        }
+      ],
+      "sanctions": "both parties proven absent from the public sanctions list SAN01 by a Groth16 non-membership proof, verified on-chain by the wrapper policy of each chain",
+      "counterparty_check": {
+        "note": "Each institution checks the other before value moves. FI FR checks the vLEI presentation of the beneficiary and the binding of its wallet against the LEI its instruction expects, then reads the arrival policy with runFor; the node of FI SG1 checks the payer the same way before it signs its arrival attestation. The verifier signs one attestation per controlled party, and the vLEI policy of each chain records what it relied upon (VleiReliedUpon). Test root, not GLEIF; fictitious LEIs.",
+        "verifier": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+        "payer": {
+          "party": "FI FR",
+          "wallet": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "lei_presented": "DEMO00FIFRPAYER00119",
+          "lei_expected": "DEMO00FIFRPAYER00119",
+          "role": 1,
+          "role_name": "OOR (Head of Payments)",
+          "verifiedAt": "2026-10-22T00:59:26Z",
+          "relied_upon": {
+            "chainId": 11155111,
+            "tx": "0x231ca7ffaf50927b090fdbd48bfb5c4d016ee087cc673e83d7096d35626858db",
+            "policy": "source.contracts.VleiAttestationPolicy"
+          }
+        },
+        "beneficiary": {
+          "party": "FI SG1",
+          "wallet": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "lei_presented": "DEMO00FISG1BENEF0172",
+          "lei_expected": "DEMO00FISG1BENEF0172",
+          "role": 1,
+          "role_name": "OOR (Head of Treasury)",
+          "verifiedAt": "2026-10-22T00:59:27Z",
+          "relied_upon": {
+            "chainId": 421614,
+            "tx": "0x4ebe2d5ba9ce5ae3736421e7ce573065294420b1320f9a6a0b7348fa9f674f73",
+            "policy": "destination.contracts.VleiAttestationPolicy"
+          }
+        }
+      },
+      "guid": "0x60d9c87d33ce3c14a161fee5d3c8bfe04399eeb645abc67d24ee0094a7066a3c",
+      "uetr": "0xbc164ff4a08bd54bef60e6af246f2369",
+      "note": "Played on 2026-10-22 between 00:59 and 01:02 UTC, the first conforming pass with the vLEI policy installed last on both wrappers (see generation.vlei). Route 0: the direct pool quoted more than the USD pivot at that block."
+    },
+    "conforming_vlei_agent_mandate": {
+      "outcome": "settled",
+      "route": 0,
+      "amount_eurx": "1000",
+      "rate_sgd_per_eur": 1.4681282062822432,
+      "beneficiary_delta_sgdx": "1468.12820628224328841",
+      "gap_to_reference_bps": -12.43,
+      "parties": {
+        "originatingFI": {
+          "name": "FI FR",
+          "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "role": "pays EUR on Ethereum Sepolia; an agent acts for it under a mandate bounded in amount, asset and validity, chained to the OOR of its Head of Payments"
+        },
+        "beneficiaryFI": {
+          "name": "FI SG1",
+          "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "role": "receives SGD, node signed the arrival attestation; its officer (OOR) presented a vLEI, checked before the send"
+        }
+      },
+      "legs": [
+        {
+          "chainId": 11155111,
+          "phase": "wrap",
+          "tx": "0xf77f544e8ff701b1d9156d03647916c727b66dbeccf6bb96f0810d8be1543741",
+          "what": "FI FR wraps 1000 EURX into wEURX (Policy Wrapper, deposit)"
+        },
+        {
+          "chainId": 11155111,
+          "phase": "lock",
+          "tx": "0x1149a3221410399cbf806721480622f7c9f1ffbeef13ba9b17997688d1903593",
+          "what": "transferFrom payer to the source adapter, gated by the wrapper policy chain (required checks, leg binding, attestation validator, sanctions non-membership proof, then, last, the vLEI attestation of the agent acting for the payer under its mandate, which emits VleiReliedUpon); the adapter unwraps and locks 1000 EURX; the beneficiary gate checked the arrival proofs BEFORE the debit"
+        },
+        {
+          "chainId": 421614,
+          "phase": "swap+deliver",
+          "tx": "0x26106aa502ab870c26fb1cb5375a89ab8bc77c76ccbb7fd14ba59ca363d8f770",
+          "what": "atomic lzCompose on route 0 (direct pool): wEURX unwrapped, 1000 EURX swapped through the direct EURX/SGDX pool, SGDX wrapped, wSGDX delivered to FI SG1 under the wrapper policy chain, the vLEI attestation of the beneficiary last (VleiReliedUpon)"
+        },
+        {
+          "chainId": 421614,
+          "phase": "unwrap",
+          "tx": "0x3bc6098f233f81a9e71711ce3fa52f40f903bc847d034464f1b78df7962085d0",
+          "what": "FI SG1 unwraps the delivered wSGDX into SGDX"
+        }
+      ],
+      "sanctions": "both parties proven absent from the public sanctions list SAN01 by a Groth16 non-membership proof, verified on-chain by the wrapper policy of each chain",
+      "counterparty_check": {
+        "note": "Each institution checks the other before value moves. FI FR checks the vLEI presentation of the beneficiary and the binding of its wallet against the LEI its instruction expects, then reads the arrival policy with runFor; the node of FI SG1 checks the payer the same way before it signs its arrival attestation. The verifier signs one attestation per controlled party, and the vLEI policy of each chain records what it relied upon (VleiReliedUpon). Test root, not GLEIF; fictitious LEIs.",
+        "verifier": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+        "payer": {
+          "party": "FI FR, through an agent under a mandate",
+          "wallet": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "lei_presented": "DEMO00FIFRPAYER00119",
+          "lei_expected": "DEMO00FIFRPAYER00119",
+          "role": 3,
+          "role_name": "agent under a mandate",
+          "mandate": {
+            "issued_by": "the OOR of FI FR (Head of Payments)",
+            "max_amount_eurx": "250000.00",
+            "asset": "EURX",
+            "valid_until": "2026-11-21T00:21:45Z"
+          },
+          "verifiedAt": "2026-10-22T01:05:08Z",
+          "relied_upon": {
+            "chainId": 11155111,
+            "tx": "0x1149a3221410399cbf806721480622f7c9f1ffbeef13ba9b17997688d1903593",
+            "policy": "source.contracts.VleiAttestationPolicy"
+          }
+        },
+        "beneficiary": {
+          "party": "FI SG1",
+          "wallet": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "lei_presented": "DEMO00FISG1BENEF0172",
+          "lei_expected": "DEMO00FISG1BENEF0172",
+          "role": 1,
+          "role_name": "OOR (Head of Treasury)",
+          "verifiedAt": "2026-10-22T01:05:10Z",
+          "relied_upon": {
+            "chainId": 421614,
+            "tx": "0x26106aa502ab870c26fb1cb5375a89ab8bc77c76ccbb7fd14ba59ca363d8f770",
+            "policy": "destination.contracts.VleiAttestationPolicy"
+          }
+        }
+      },
+      "guid": "0xcda58387c02421fb943773c6566564c7d451b295bcb39c1bf4de77f039d01cca",
+      "uetr": "0x3ef6f7e6d9ba4aa789cac95397bca99f",
+      "note": "Played on 2026-10-22 between 01:05 and 01:08 UTC. The payer side is an agent of FI FR acting under a mandate (role 3): the source policy accepts it because its role mask admits agents, and the event records the digest of the mandate. Route 0: the direct pool quoted more than the USD pivot at that block, by less than 0.001 SGDX."
+    },
+    "vlei_refusals_without_transaction": [
+      {
+        "name": "refused_vlei_revoked_officer",
+        "outcome": "refused",
+        "transaction_emitted": false,
+        "amount_eurx": "1000",
+        "beneficiary_delta_sgdx": "0",
+        "reason": "the payer presents the OOR credential of a former officer of FI FR (Head of Operations), revoked in the credential status registry (TEL). The verifier refuses the presentation and the wallet binding, so no attestation is signed and no transaction is emitted.",
+        "counterparty_check": {
+          "side": "payer, checked before the send",
+          "party": "FI FR",
+          "wallet": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "lei_presented": "DEMO00FIFRPAYER00119",
+          "lei_expected": "DEMO00FIFRPAYER00119",
+          "role_name": "OOR (Head of Operations)",
+          "credential_status": "revoked",
+          "checked_at": "2026-10-22T00:57:18Z"
+        },
+        "read_only_evidence": [
+          "runFor of source.contracts.VleiAttestationPolicy with no attestation: PolicyRejected(VleiAttestationPolicy: no vLEI attestation supplied)",
+          "witness: the officer in function (credential issued) is attested and runFor of the same policy returns Continue"
+        ],
+        "balances": "payer wEURX and EURX, source lock, arrival reserve, pools and beneficiary identical before and after (read at 00:57:17 and 00:57:21 UTC)"
+      },
+      {
+        "name": "refused_vlei_stolen_attestation",
+        "outcome": "refused",
+        "transaction_emitted": false,
+        "amount_eurx": "1000",
+        "beneficiary_delta_sgdx": "0",
+        "reason": "FI SG2, which holds no vLEI, tries to pay with the attestation of FI FR. The verifier refuses to sign for the wallet of FI SG2: the wallet binding is signed for another address. Presented by FI SG2, the attestation of FI FR is refused by the source policy because it is bound to another wallet.",
+        "counterparty_check": {
+          "side": "payer, checked before the send",
+          "party": "FI SG2",
+          "wallet": "0x96495854Da659fa8e75781bbd1D4767721eff401",
+          "lei_presented": "none (no vLEI)",
+          "attestation_presented": "the attestation of FI FR, for wallet 0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38 and LEI DEMO00FIFRPAYER00119",
+          "checked_at": "2026-10-22T01:02:46Z"
+        },
+        "read_only_evidence": [
+          "the verifier, asked for the wallet of FI SG2: refused, the KERI signature of the holder and the EVM countersignature name 0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38, not 0x96495854Da659fa8e75781bbd1D4767721eff401",
+          "runFor of source.contracts.VleiAttestationPolicy with the attestation of FI FR for the wallet of FI SG2: PolicyRejected(VleiAttestationPolicy: attestation is for another wallet)",
+          "witness: the same attestation for the wallet of FI FR: Continue"
+        ],
+        "balances": "payer wEURX and EURX, source lock, arrival reserve, pools and beneficiary identical before and after, FI SG2 holds 0 wEURX (read at 01:02:46 and 01:02:49 UTC)"
+      },
+      {
+        "name": "refused_vlei_unexpected_counterparty",
+        "outcome": "refused",
+        "transaction_emitted": false,
+        "amount_eurx": "1000",
+        "beneficiary_delta_sgdx": "0",
+        "reason": "the instruction of FI FR names the LEI it means to pay (DEMO00FISG2XXXXXXX81), but the beneficiary wallet given belongs to FI SG1, whose valid vLEI is presented (DEMO00FISG1BENEF0172). The counterparty check of FI FR refuses before any attestation is signed: the LEI presented is not the LEI expected. Nothing is sent.",
+        "counterparty_check": {
+          "side": "beneficiary, checked by the payer before the send",
+          "party": "FI SG1",
+          "wallet": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "lei_presented": "DEMO00FISG1BENEF0172",
+          "lei_expected": "DEMO00FISG2XXXXXXX81",
+          "role_name": "OOR (Head of Treasury)",
+          "credential_status": "issued",
+          "checked_at": "2026-10-22T00:57:46Z"
+        },
+        "read_only_evidence": [
+          "none on chain: the refusal is made by FI FR before an attestation exists, so runFor of the arrival policy is not played; the check of the payer by the node of FI SG1 passed (LEI presented equal to the LEI expected)"
+        ],
+        "balances": "payer wEURX and EURX, source lock, arrival reserve, pools and beneficiary identical before and after (read at 00:57:44 and 00:57:47 UTC)"
+      },
+      {
+        "name": "refused_vlei_agent_beyond_mandate",
+        "outcome": "refused",
+        "transaction_emitted": false,
+        "amount_eurx": "300000",
+        "beneficiary_delta_sgdx": "0",
+        "reason": "an agent of FI FR acting under a mandate capped at 250,000.00 EURX asks to pay 300,000 EURX. The verifier refuses the presentation (amount above the mandate cap), so no attestation is signed and no transaction is emitted. The chain enforces the same cap: an attestation obtained for 1,000 EURX carries the cap, and the source policy refuses it for an amount above the cap.",
+        "counterparty_check": {
+          "side": "payer, checked before the send",
+          "party": "FI FR, through an agent under a mandate",
+          "wallet": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "lei_presented": "DEMO00FIFRPAYER00119",
+          "lei_expected": "DEMO00FIFRPAYER00119",
+          "role_name": "agent under a mandate (max 250,000.00 EURX, asset EURX, valid until 2026-11-21T00:21:45Z)",
+          "credential_status": "issued",
+          "checked_at": "2026-10-22T00:57:25Z"
+        },
+        "read_only_evidence": [
+          "runFor of source.contracts.VleiAttestationPolicy for an amount above the mandate: PolicyRejected(VleiAttestationPolicy: amount above the mandate)",
+          "witness: runFor with an amount within the mandate: Continue"
+        ],
+        "balances": "payer wEURX and EURX, source lock, arrival reserve, pools and beneficiary identical before and after (read at 00:57:24 and 00:57:29 UTC)"
+      }
+    ]
   },
   "wiring": {
     "note": "LayerZero pathway of the FX corridor, pinned by the application on both chains (all six steps of the OFT wiring list). Re-applied to the second-generation adapters on 2026-10-18; the library, executor and gas values are unchanged. On 2026-10-20 a second required DVN was added on both chains (send and receive): two required DVNs, LayerZero Labs and Horizen. Replayed read-only by scripts/demo/wiring-check.mjs; set by scripts/wiring/WireLZ.s.sol. Enforced options ADD to the caller's options, so the sender passes none.",

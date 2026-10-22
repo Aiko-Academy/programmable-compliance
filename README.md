@@ -19,7 +19,7 @@ node scripts/demo/corridor-fx-e2e.mjs      # every demonstration transaction re-
 ```
 
 Expected: the first prints `surface propre` and `aucun refus`; the second ends with `0 difference`; the third ends with
-`result : every check was made and passed` and exit code 0 (203 checks over 39 transactions on 2026-10-20). Exit code 3
+`result : every check was made and passed` and exit code 0 (298 checks over 48 transactions on 2026-10-22). Exit code 3
 means a check could not be made because an endpoint did not serve old blocks: pass your own node with `--rpc-sepolia`
 and `--rpc-arbitrum`. Details and the meaning of each check: `RUNBOOK.md`.
 
@@ -31,8 +31,10 @@ role, none imposed:
 - **PBM (Policy Wrapper)**: compliance as a detachable layer over an immutable asset.
 - **Chainlink ACE**: the compliance-engine model; certain components are integrated, not the whole
   stack. Credited by reference (`references/chainlink-ace.md`).
-- **vLEI (GLEIF)**: verifiable organisational identity. Integration in progress: today the toolkit
-  checks an administered LEI registry, not a vLEI credential (`references/vlei-gleif.md`).
+- **vLEI (GLEIF)**: verifiable organisational identity, used as the counterparty check. On the FX
+  corridor, vLEI credentials are verified off chain on a test ecosystem (a test root, not GLEIF) and an
+  attestation bound to the transfer is verified on chain before value moves; the reference deployment
+  still checks an administered LEI registry (`references/vlei-gleif.md`).
 - **LayerZero**: the cross-chain transport (`references/layerzero.md`).
 
 The Policy Wrapper makes the **asset** agnostic (any token, even immutable or foreign, can be governed
@@ -81,7 +83,7 @@ git config core.hooksPath .githooks
 
 Our own surface is **AGPL-3.0**, except the two zero-knowledge verifiers auto-generated from circuits,
 redistributed under **GPL-3.0**, and the cross-chain FX corridor contracts (`ComplianceOFTAdapter`,
-`ArrivalComposerFX`, `PolicyWrapperOZ4`), our own permissive code, redistributed under **MIT**. The full
+`ArrivalComposerFX`, `PolicyWrapperOZ4`, `VleiAttestationPolicy`), our own permissive code, redistributed under **MIT**. The full
 texts are in `LICENSE` (AGPL-3.0) and `LICENSE-GPL-3.0`; the per-file licence is recorded in `MANIFEST.json`. No artifact here is under a non-redistributable licence
 (BUSL-1.1, LayerZero BUSL, UNLICENSED); vendored dependencies under such licences stay private and are
 never part of this surface. LayerZero is consumed through its permissive messaging layer and credited

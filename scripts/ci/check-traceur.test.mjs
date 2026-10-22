@@ -46,3 +46,53 @@ test('adresse du RUNBOOK absente du traceur', () => {
   assert.deepEqual(adressesInconnues({ 'RUNBOOK.md': `voir ${a}` }, [`{"x":"${a.toUpperCase().replace('0X', '0x')}"}`]), []);
   assert.match(adressesInconnues({ 'RUNBOOK.md': `voir ${b}` }, [`{"x":"${a}"}`])[0], /RUNBOOK.md/);
 });
+
+// Refus sans transaction (vlei_refusals_without_transaction) et controle de contrepartie (counterparty_check).
+const sansTx = () => ({
+  name: 'r1', outcome: 'refused', transaction_emitted: false, reason: 'raison', read_only_evidence: ['runFor : PolicyRejected'],
+});
+const avecSansTx = (...r) => ({ demonstration_passes: { note: 'x', vlei_refusals_without_transaction: r } });
+test('un refus sans transaction conforme ne donne aucun refus', () => {
+  assert.deepEqual(controlerPasses(avecSansTx(sansTx())), []);
+});
+test('refus sans transaction : liste attendue, issue, transaction_emitted, jambe, hash, raison, temoin, doublon', () => {
+  assert.match(controlerPasses({ demonstration_passes: { vlei_refusals_without_transaction: {} } }).join('|'), /une liste est attendue/);
+  for (const [muter, motif] of [
+    [(r) => { r.outcome = 'settled'; }, /seul refused/],
+    [(r) => { r.transaction_emitted = true; }, /transaction_emitted/],
+    [(r) => { delete r.transaction_emitted; }, /transaction_emitted/],
+    [(r) => { r.legs = []; }, /ni jambe ni tx/],
+    [(r) => { r.tx = H; }, /ni jambe ni tx/],
+    [(r) => { r.read_only_evidence = [`voir ${H}`]; }, /hash de 32 octets/],
+    [(r) => { r.reason = ''; }, /reason absent/],
+    [(r) => { r.read_only_evidence = []; }, /read_only_evidence/],
+    [(r) => { delete r.name; }, /name absent/],
+  ]) {
+    const r = sansTx(); muter(r);
+    assert.match(controlerPasses(avecSansTx(r)).join('|'), motif);
+  }
+  assert.match(controlerPasses(avecSansTx(sansTx(), sansTx())).join('|'), /name en double/);
+});
+const H2 = '0x' + 'b'.repeat(64);
+const reglee = () => ({
+  outcome: 'settled',
+  legs: [{ chainId: 11155111, phase: 'lock', tx: H }, { chainId: 421614, phase: 'swap+deliver', tx: H2 }],
+  counterparty_check: {
+    payer: { wallet: '0x1', lei_presented: 'L1', lei_expected: 'L1', role: 1, verifiedAt: '2026-10-22T00:59:26Z', relied_upon: { chainId: 11155111, tx: H, policy: 'p' } },
+    beneficiary: { wallet: '0x2', lei_presented: 'L2', lei_expected: 'L2', role: 1, verifiedAt: '2026-10-22T00:59:27Z', relied_upon: { chainId: 421614, tx: H2, policy: 'q' } },
+  },
+});
+test('controle de contrepartie conforme, puis chaque champ fausse', () => {
+  assert.deepEqual(controlerPasses(traceur(reglee())), []);
+  for (const [muter, motif] of [
+    [(p) => { p.counterparty_check.payer.lei_expected = ''; }, /lei_expected absent/],
+    [(p) => { p.counterparty_check.payer.role = 'OOR'; }, /role entier/],
+    [(p) => { p.counterparty_check.beneficiary.verifiedAt = '22/10/2026'; }, /verifiedAt/],
+    [(p) => { p.counterparty_check.beneficiary.relied_upon.tx = H; }, /aucune jambe de la passe sur la chaine 421614/],
+    [(p) => { p.counterparty_check.payer.relied_upon.chainId = 1; }, /relied_upon sans chaine/],
+    [(p) => { p.counterparty_check = {}; }, /sans payer ni beneficiary/],
+  ]) {
+    const p = reglee(); muter(p);
+    assert.match(controlerPasses(traceur(p)).join('|'), motif);
+  }
+});

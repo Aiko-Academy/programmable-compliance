@@ -53,20 +53,77 @@ deployment is deterministic by deployer and nonce, and each tracker is read on i
 ### Compliance model of the corridor
 
 All compliance checks are made off-chain, before any transaction, by the node of each financial institution (FI):
-sanctions, customer due diligence, confirmation of the beneficiary. Each node signs its result. The Policy Wrapper
+sanctions, customer due diligence, confirmation of the beneficiary. Each node signs its result. Since 2026-10-22 the
+counterparty check is added: each party's vLEI is verified off chain, and an attestation bound to the transfer is
+signed by a registered verifier (see the next section and `references/vlei-gleif.md`). The Policy Wrapper
 does not query any identity registry: it only verifies, on-chain and before the wrapped token moves, the proofs
-carried by the transfer (signature, active key, binding to the leg, freshness, and a Groth16 non-membership proof
-for the public sanctions list). A proof is bound to one leg and one chain, so the proofs travel with the transfer
-from the source chain to the arrival chain and are verified again by the wrapper of each chain. The source adapter
-also verifies the arrival proofs before the debit (the beneficiary gate), so a transfer that the arrival chain
-would refuse is refused at the source, before any lock. The addresses of the verifiers and policies are in
-`deployments/fx-corridor.json`, under `source`, `destination` and `zk`.
+carried by the transfer (signature, active key, binding to the leg, freshness, a Groth16 non-membership proof
+for the public sanctions list, and the vLEI attestation of the party it controls). A proof is bound to one leg and
+one chain, so the proofs travel with the transfer from the source chain to the arrival chain and are verified again by
+the wrapper of each chain. The source adapter also verifies the arrival proofs signed by the nodes before the debit
+(the beneficiary gate), so a transfer that those proofs would get refused at arrival is refused at the source, before
+any lock. The gate does not verify the arrival vLEI attestation, because the source chain cannot read the state of the
+arrival policy: the sender checks it with a read-only `runFor` call on the arrival policy before sending, and a
+refusal at arrival is atomic (no exchange), and the amount is then sent back to the payer (see "Returning a refused
+amount"). The addresses of the verifiers and
+policies are in `deployments/fx-corridor.json`, under `source`, `destination`, `zk` and `generation.vlei`.
+
+### The vLEI counterparty check (since 2026-10-22)
+
+`VleiAttestationPolicy` (ABI `abi/VleiAttestationPolicy.json`, MIT) is the last policy of the source wEURX, where it
+checks the payer, and of the delivery wSGDX, where it checks the beneficiary. It verifies an EIP-712 attestation signed
+by a registered verifier after an off-chain vLEI verification against a pinned TEST root (not GLEIF). The chain
+verifies the verifier's signature, not KERI or ACDC. The expected values are in `deployments/fx-corridor.json`, under
+`source.contracts`, `destination.contracts` and `generation.vlei`. To read them back (Foundry `cast`, read only):
+
+```
+# Sepolia: the policy list of the source wEURX, for transfer (0xa9059cbb) and transferFrom (0x23b872dd)
+cast call 0x9b4Abe496A3F387d2D7723915844C9bEF96C7a26 'getPolicies(address,bytes4)(address[])' \
+  0x738DE4A03a18891e07Ff001323cA4d150d4B2C84 0xa9059cbb --rpc-url <sepolia rpc>
+# its configuration for that wrapper: (enabled, side, maxAge, roleMask, rootAid)
+cast call 0x7F2f0E02eE528B991fF527ceACBFef767BEbb237 'configOf(address)((bool,uint8,uint32,uint8,bytes32))' \
+  0x738DE4A03a18891e07Ff001323cA4d150d4B2C84 --rpc-url <sepolia rpc>
+# the verifier is registered
+cast call 0x7F2f0E02eE528B991fF527ceACBFef767BEbb237 'isVerifier(address)(bool)' \
+  0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6 --rpc-url <sepolia rpc>
+```
+
+On Arbitrum Sepolia, the same three reads use the manager `0x21AD6DC26A2F727A7b329cEB1279Ffe64e2AC269`, the wrapper
+`0xd8b0f8795141a0B2736BeF452726A39d55638f40` and the policy `0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc`.
+
+| read | expected, source wEURX | expected, delivery wSGDX |
+|---|---|---|
+| `getPolicies`, both selectors | the vLEI policy is the last entry, after the sanctions policy | same |
+| `configOf` | `enabled` true, `side` 0 (`from`, the payer), `maxAge` 3600, `roleMask` 10 (OOR or agent under a mandate) | `enabled` true, `side` 1 (`to`, the beneficiary), `maxAge` 3600, `roleMask` 6 (OOR or ECR) |
+| `configOf`, `rootAid` | `keccak256` of the pinned root identifier, `generation.vlei.pinned_root_keccak256` | same |
+| `isVerifier(generation.vlei.verifier)` | true | true |
+
+The role mask has one bit per role: OOR is `1 << 1`, ECR is `1 << 2`, agent under a mandate is `1 << 3`. To recompute the
+root digest: `cast keccak <generation.vlei.pinned_root_aid>`.
+
+What each transfer relied upon is an event of the policy, emitted in the same transaction as the gated transfer:
+
+```
+cast logs --from-block 11965986 --address 0x7F2f0E02eE528B991fF527ceACBFef767BEbb237 \
+  'VleiReliedUpon(address indexed subject,bytes16 indexed uetr,address indexed wallet,bytes20 lei,uint8 role,bytes32 credentialSaid,bytes32 holderAid,bytes32 rootAid,bytes32 mandateSaid,uint64 verifiedAt,address verifier)' \
+  --rpc-url <sepolia rpc>
+```
+
+On Arbitrum Sepolia, read from block 321558108 at `0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc`. The event topic is
+`0xd2301df7a27533d426a7a8f98de3468e691786797ea5071d789a5b77b9c1b32c`; the indexed fields are the wrapper, the uetr and
+the wallet of the controlled party. `lei` is the 20 ASCII characters of the LEI; `credentialSaid`, `holderAid`,
+`rootAid` and `mandateSaid` are keccak256 digests of the CESR identifiers (zero `mandateSaid` when no mandate);
+`verifiedAt` is the time of the off-chain check, at most 3600 seconds before the block. An empty result with no error
+means that no transfer has relied on the policy yet: the same read on `VerifierSet(address indexed verifier,bool active)`
+must return the registration of the verifier at the creation block, which proves the read itself works. Since
+2026-10-22 two conforming passes have relied on the policy on both chains (`demonstration_passes.conforming_vlei` and
+`conforming_vlei_agent_mandate`), and `scripts/demo/corridor-fx-e2e.mjs` reads their events (next section).
 
 ### Replaying the FX corridor from the surface
 
 The FX cross-chain corridor (EURX to SGD, changed at the arrival pivot by a Uniswap V3 pool and gated by the Policy
-Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, under `demonstration_passes`, all at
-1000 EURX:
+Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, under `demonstration_passes`, at
+1000 EURX unless stated:
 
 - `conforming`: wrap, gated transfer and lock at the source, swap and gated delivery at arrival, unwrap;
 - `conforming_safe_2dvn`, `refused_safe_2dvn`, `returned_safe_2dvn`: the same three scenarios played again on
@@ -88,7 +145,16 @@ Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, und
   lock. Each transaction reverts: the proof of refusal is the EVM status of failed plus the error read by replaying
   the call at the block before, and balances equal before and after;
 - `returned`: the residual case where the node key is revoked after signing, the arrival refuses, and the value goes
-  back to the payer.
+  back to the payer;
+- `conforming_vlei`, `conforming_vlei_agent_mandate`: the two conforming passes of 2026-10-22 with the vLEI
+  counterparty check, an officer (OOR) on each side, then an agent of FI FR under a mandate (role 3) on the payer side.
+  Each carries a `counterparty_check`: for each side, the LEI presented and the LEI expected, the role, the time of the
+  off-chain verification and the transaction where the policy relied on it (`VleiReliedUpon`). Test root, not GLEIF;
+  fictitious LEIs;
+- `vlei_refusals_without_transaction`: four vLEI refusals stopped before any transaction (a revoked officer credential,
+  the attestation of FI FR presented by another wallet, a LEI other than the one the payer expects, an agent asking
+  300,000 EURX beyond a mandate of 250,000.00). They emit nothing, so there is no receipt to read: the script prints
+  them as `declared`, with their read-only evidence (`runFor` of the policy), and never counts them as checks.
 
 A reader holding only this surface verifies them end to end, reading each receipt live on the public RPC:
 
@@ -110,9 +176,10 @@ checks:
 | the composer never holds USDX | no USDX transfer touches the composer, which is itself present in seven transfers of the transaction (a negative check with a positive witness) |
 | a refusal at the source moves nothing | the transaction failed, was sent to the source adapter by the payer, did not run out of gas, and its call replayed at the block before reverts with the error the tracker names (policy address and message); the payer balance and the lock are read before and after |
 | a refusal at arrival leaves nothing behind | `Refused` for the same guid with the decoded reason, no transfer, no completed policy run; the key window is in order (revoked, refused, restored, returned); `ReturnedToSource`, a second guid for the return packet, `ReturnedToPayer` for the exact amount |
+| each side is the counterparty the other expects (vLEI generation) | for a gated transfer at or after the creation block of the vLEI policy on its chain (`generation.vlei`): at the block before, `getPolicies` shows the vLEI policy last on the wrapper for `transfer` and `transferFrom`, `configOf` (enabled, side, maxAge, roleMask, rootAid) equals the tracker and `isVerifier` is true for the attester; the receipt carries exactly one `VleiReliedUpon`, whose wrapper, wallet, LEI, role (within the role mask), root, verifier, time of verification (at most maxAge before the block) and mandate match `counterparty_check`; the same uetr on both chains. Earlier passes are verified as before: the policy did not exist then |
 
 What a chain cannot show is printed as `declared` and never counted: a signature that was never made, a prover that
-exits with code 3. The tracker lists under `demonstration_passes.not_played` what these passes do not exercise; the script prints
+exits with code 3, a vLEI refusal stopped before any transaction. The tracker lists under `demonstration_passes.not_played` what these passes do not exercise; the script prints
 that list in its summary.
 
 Exit code: 0 when every check was made and passed; 1 when a check failed; 3 when nothing failed but a check could not

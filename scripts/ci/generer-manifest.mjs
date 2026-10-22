@@ -15,7 +15,7 @@ const ECRIT_LE = new Date().toISOString().slice(0, 10);
 // nos contrats du corridor FX cross-chain restent MIT (notre code permissif) ; tout le reste de notre
 // surface est AGPL-3.0. Les traceurs sont des donnees, pas du code licencie.
 const GPL = new Set(['HolderKycGroth16Verifier', 'SanctionsGroth16Verifier']);
-const MIT = new Set(['ComplianceOFTAdapter', 'ArrivalComposerFX', 'PolicyWrapperOZ4']);
+const MIT = new Set(['ComplianceOFTAdapter', 'ArrivalComposerFX', 'PolicyWrapperOZ4', 'VleiAttestationPolicy']);
 
 function sha256(p) { return createHash('sha256').update(readFileSync(p)).digest('hex'); }
 function spdx(p) {
