@@ -1,0 +1,65 @@
+{
+  "schema": 3,
+  "pass": "refusal-proof-forged-by-one-bit",
+  "amount_eur": "1000.0",
+  "uetr": "0xca22418b8cbac7ea6e8bb2fe24b1f8d3",
+  "tampering": {
+    "word": "r of the payer's proof item",
+    "before": "0x0f99efc5e375b29ac60b3d79e0497106b54ea712ff913ff3eca22ab739b9c7cb",
+    "after": "0x0f99efc5e375b29ac60b3d79e0497106b54ea712ff913ff3eca22ab739b9c7ca",
+    "flipped_bit": "the least significant bit"
+  },
+  "client_precheck": {
+    "ok": false,
+    "reason": "PolicyRejected(ZkSanctionsWrapperPolicy: SAN01 sanctions proof is not valid for this transfer)"
+  },
+  "balances_before": {
+    "time": "2026-10-18T07:24:20.866Z",
+    "payer_wEURX": "3000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "4000.0",
+    "supply_wEURX_source": "3000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "72038.214290424923358889",
+    "pool_SGDX": "95092.339865823831620445",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "7934.699215167099333608",
+    "composer_wEURX": "0.0"
+  },
+  "legs": [
+    {
+      "leg": "send-refuse",
+      "chain": "sepolia",
+      "tx": "0xd05233e6f395dc10c786a635ef8aa0bbffbb10931dfcbcfc18b203a565077723",
+      "status": "reverted",
+      "gas_used": "2269568",
+      "note": "payer's proof altered by one bit : refused at the source wrapper's gated transfer, before any lock"
+    }
+  ],
+  "balances_after": {
+    "time": "2026-10-18T07:25:28.631Z",
+    "payer_wEURX": "3000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "4000.0",
+    "supply_wEURX_source": "3000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "72038.214290424923358889",
+    "pool_SGDX": "95092.339865823831620445",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "7934.699215167099333608",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "measured_at": "2026-10-18T07:25:29.625Z",
+  "reason_read_from_the_transaction": "PolicyRunRejected(transferFrom, 0xE01A…3376, \"ZkSanctionsWrapperPolicy: SAN01 sanctions proof is not valid for this transfer\"), with ProofInvalid() from the Groth16 verifier below, read in the trace (cast run) on 2026-10-18 ; the source Policy Wrapper refuses at the gated transfer, before any lock",
+  "refusing_policy": "AtelierZkSanctionsWrapperPolicy (0xE01A…3376), third policy of the chain : required checks, linkage and validator passed first",
+  "gas_read_in_the_trace": {
+    "zk_policy_run": 448513,
+    "adapter_verify_call": 399207,
+    "verifier_verifyProof": 394243,
+    "adapter_cap": 400000,
+    "manager_total_run": 672095,
+    "transaction_complete": 2269568,
+    "reading": "verifying a falsified proof consumes almost all of its ceiling (394 243 of 400 000) but does not exceed it : the cost of the refusal is bounded by the adapter's ceiling, it does not burn the transaction's gas. The rest of the transaction (about 1.8 M) is the deposit of the context and the preceding policies"
+  }
+}

@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: AGPL-3.0
+# Default profile: the compiler settings of the contracts in service. Changing them changes the bytecode, and
+# `scripts/verifier-bytecode.mjs` compares that bytecode to the chain.
+[profile.default]
+src = "contracts"
+test = "test"
+libs = ["lib"]
+solc_version = "0.8.28"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+# The deployment scripts (lots 2 and 3) write the addresses they deploy to deployments/<chainId>*.json.
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/", "forge-std/=lib/forge-std/src/"]
+
+# The exact settings of the contracts deployed on Hoodi: `scripts/verifier-bytecode.mjs` builds under this profile.
+[profile.hoodi]
+evm_version = "prague"

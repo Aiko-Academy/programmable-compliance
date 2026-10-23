@@ -1,0 +1,39 @@
+{
+  "previous_generation": "PREVIOUS GENERATION (2026-10-17, 50 EURX, composer and receiver replaced on 2026-10-18) : do not use as a result of the current corridor ; the 1000 EURX passes are live-result.json, live-result-refusal.json, live-result-sanctions-refusal.json, live-result-return.json, live-result-refusal-proof-forged.json and live-result-replay.json",
+  "measured_at": "2026-10-17",
+  "composeur": "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4",
+  "return_receiver": "0xeCD17DCe61F0d62452a8add68241b093E1b243fb",
+  "passes": {
+    "compliant_direct": {
+      "send_sepolia": "0x477c6ec8fe2ffa9f8af65089e95a7c8ecce2024a7c36b0fdf947dbfae1a3da94",
+      "attestedOut": "73487979888076206395",
+      "delivered": "73487979888076206395",
+      "route": 0
+    },
+    "natural_pivot_switch": {
+      "send_sepolia": "0x9c34c9cc49bdebcada429d5d3952a2bd556e04714120355d5fda265227c7a95d",
+      "route_chosen_by_the_rule": 1,
+      "forced": false,
+      "gap_pivot_minus_direct_bps": 0.62,
+      "attestedOut": "73491983363198458183",
+      "delivered": "73491983363198458183"
+    },
+    "drift_in_favour_of_direct": {
+      "send_sepolia": "0x8b379ae89153a55bd5ecda3c9593cc97593686d7c198f84aa162e0241e17c675",
+      "route": 0,
+      "attestedOut": "73487443844820728037",
+      "delivered": "73487443844820728037",
+      "surplus_kept": "109403376042771",
+      "pool_move": "0xe343d84a12ef3438d09e7c1b5405ca0489075c24ed22e67e7c4e66c361575e16",
+      "sweep_tx_arbitrum": "0xf714201f0d68d76744749a784260f27d0d8e35250cc3daa7f4665cdef22a16a5"
+    }
+  },
+  "imbalance": {
+    "step": 62,
+    "step_size_USDX": "25",
+    "cumulative_USDX": "1550",
+    "restoration_step": 39,
+    "gap_after_restoration_bps": -0.64,
+    "eurUsd_drift_after_restoration_bps": -0.79
+  }
+}

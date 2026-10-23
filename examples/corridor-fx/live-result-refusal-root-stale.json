@@ -1,0 +1,54 @@
+{
+  "schema": 3,
+  "pass": "refusal-stale-sanctions-root",
+  "amount_eur": "1000.0",
+  "uetr": "0xcfd54bf8e1aed67ce7ee38f470ddcc0d",
+  "root": {
+    "published_at": 1792453224,
+    "expires_at": 1792539624,
+    "head_at": 1792539876,
+    "list_version": "2"
+  },
+  "client_precheck": {
+    "ok": false,
+    "reason": "PolicyRejected(ZkSanctionsWrapperPolicy: SAN01 sanctions root is stale)"
+  },
+  "balances_before": {
+    "time": "2026-10-20T23:44:50.776Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "500.0",
+    "adapter_lock_EURX": "7500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "75038.214290424923358889",
+    "pool_SGDX": "90686.028013712295529784",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "13075.410943718403620053",
+    "composer_wEURX": "0.0"
+  },
+  "legs": [
+    {
+      "leg": "send-refuse",
+      "chain": "sepolia",
+      "tx": "0x446b6663c0af40272783185dcb7690ed0b7b1d117fb712a9e404efeb43e9159f",
+      "status": "reverted",
+      "gas_used": "1853911",
+      "note": "attestation and proof valid, SAN01 root stale (more than 24 h) : refused by the source wrapper at the gated transfer, before any lock"
+    }
+  ],
+  "balances_after": {
+    "time": "2026-10-20T23:45:39.732Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "500.0",
+    "adapter_lock_EURX": "7500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "75038.214290424923358889",
+    "pool_SGDX": "90686.028013712295529784",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "13075.410943718403620053",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "measured_at": "2026-10-20T23:45:40.608Z"
+}

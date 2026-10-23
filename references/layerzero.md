@@ -4,7 +4,7 @@ The toolkit uses LayerZero as its cross-chain transport: the leader for reach ac
 We write our own OApp / OFT / OFTAdapter on the permissive messaging layer and call endpoints that are
 already deployed; we never embed the non-redistributable plumbing.
 
-- Upstream: LayerZero-Labs/LayerZero-v2 (git submodule in the private toolkit; not vendored here).
+- Upstream: LayerZero-Labs/LayerZero-v2 (consumed as an upstream dependency; not vendored here).
 - Compliance hook: LayerZero does not offer a first-class policy hook (CCIP does). We add it as an
   override of `_debit` (source) and `_credit` (destination) in a `ComplianceOFTAdapter` whose
   `innerToken` is the Policy Wrapper. On the source, `_debit` pulls the wrapped token from the payer

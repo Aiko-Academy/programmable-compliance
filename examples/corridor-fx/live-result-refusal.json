@@ -1,0 +1,51 @@
+{
+  "schema": 2,
+  "pass": "refusal-at-source",
+  "amount_eur": "1000.0",
+  "beneficiary_without_credential": "0x96495854Da659fa8e75781bbd1D4767721eff401",
+  "beneficiary_node": {
+    "signed": false,
+    "reason": "beneficiary's node : 0x96495854Da659fa8e75781bbd1D4767721eff401 is unknown to its FI (no identity), attestation not signed",
+    "submitted_transaction": false
+  },
+  "test_2_attestation_of_another_beneficiary": {
+    "quoteSend_reason": "ProofNotBound(customer-due-diligence)"
+  },
+  "balances_before": {
+    "time": "2026-10-20T09:35:34.944Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "6000.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "74038.214290424923358889",
+    "pool_SGDX": "92154.584436800588607297",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "10872.454644190342346756",
+    "composer_wEURX": "0.0"
+  },
+  "legs": [
+    {
+      "leg": "send-refuse",
+      "chain": "sepolia",
+      "tx": "0x5a96c56f93ff8c299c98689a2b03ca9441fb6f96ddb2ab6a8bd6d69ec69805a5",
+      "status": "reverted",
+      "note": "another beneficiary's attestation : refused by the pre-transaction guard (binding to the party), before any lock"
+    }
+  ],
+  "balances_after": {
+    "time": "2026-10-20T09:36:32.872Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "6000.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "74038.214290424923358889",
+    "pool_SGDX": "92154.584436800588607297",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "10872.454644190342346756",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "measured_at": "2026-10-20T09:36:33.775Z"
+}

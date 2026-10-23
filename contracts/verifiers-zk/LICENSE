@@ -1,0 +1,4 @@
+The verifiers in this folder are generated from circuits published under GPL-3.0 and remain under GPL-3.0
+(https://www.gnu.org/licenses/gpl-3.0.txt). The rest of the pack, under AGPL-3.0, only references them through the
+`IZkVerifier` interface of the `ZkCheckRegistry` registry: an integrator can install their own verifiers without
+taking this licence.

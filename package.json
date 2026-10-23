@@ -1,0 +1,11 @@
+{
+  "name": "programmable-compliance",
+  "private": true,
+  "license": "AGPL-3.0",
+  "description": "Programmable Compliance: contracts, tests and read-only verification scripts",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "ethers": "6.17.0"
+  }
+}

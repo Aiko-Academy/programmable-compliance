@@ -1,0 +1,54 @@
+{
+  "schema": 3,
+  "pass": "refusal-sanctions",
+  "amount_eur": "1000.0",
+  "legs": [
+    {
+      "leg": "send-refuse",
+      "chain": "sepolia",
+      "tx": "0x20df734e7ca8c48f7cbe4b80f150ce694779a4c52429b86052ae2de4cbacb8b8",
+      "status": "reverted",
+      "note": "non-membership proof made for an identifier other than the payer's : refused by the source Policy Wrapper at the gated transfer, before any lock"
+    }
+  ],
+  "list": "SAN01 demo-sanctions-v1 (public demonstration list)",
+  "listed_party": {
+    "id": "0x7e57000000000000000000000000000000005a11",
+    "prover_exit_code": 3,
+    "proof_produced": false,
+    "message": "prove-sanctions: from 0x7e57000000000000000000000000000000005a11 : the identifier is in the list : no proof of non-membership exists"
+  },
+  "balances_before": {
+    "time": "2026-10-18T07:03:29.856Z",
+    "payer_wEURX": "3000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "4000.0",
+    "supply_wEURX_source": "3000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "72038.214290424923358889",
+    "pool_SGDX": "95092.339865823831620445",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "7934.699215167099333608",
+    "composer_wEURX": "0.0"
+  },
+  "client_precheck": {
+    "ok": false,
+    "reason": "PolicyRejected(ZkSanctionsWrapperPolicy: SAN01 sanctions proof is not valid for this transfer)"
+  },
+  "balances_after": {
+    "time": "2026-10-18T07:04:41.954Z",
+    "payer_wEURX": "3000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "4000.0",
+    "supply_wEURX_source": "3000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "72038.214290424923358889",
+    "pool_SGDX": "95092.339865823831620445",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "7934.699215167099333608",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "measured_at": "2026-10-18T07:04:42.981Z",
+  "reason_read_from_the_transaction": "PolicyRunRejected(transferFrom, 0xE01A…3376, \"ZkSanctionsWrapperPolicy: SAN01 sanctions proof is not valid for this transfer\"), with ProofInvalid() from the Groth16 verifier below, read in the trace of the reverted transaction (cast run) on 2026-10-18 : the source Policy Wrapper refuses at the gated transfer, before any lock"
+}

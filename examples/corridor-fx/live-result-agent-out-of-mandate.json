@@ -1,0 +1,112 @@
+{
+  "schema": 3,
+  "pass": "refusal-agent-out-of-mandate",
+  "amount_eur": "300000.0",
+  "uetr": "0x111c830c49ababc09fb90170f9be847b",
+  "submitted_transaction": false,
+  "vlei": {
+    "warning": "pinned TEST root (not GLEIF), fictional LEIs prefixed DEMO",
+    "source_policy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+    "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+    "agent_out_of_mandate": {
+      "party": "fi-fr-agent-mandate",
+      "signed": false,
+      "lei": "DEMO00FIFRPAYER00119",
+      "expectedLei": "DEMO00FIFRPAYER00119",
+      "role": "MANDAT",
+      "roleTitle": "Head of Payments",
+      "credentialSaid": "EDvGx47oSGdb4iraXl88jPMqQmTF1MSTRlS7ZDzlKmAD",
+      "holderAid": "EBFA-pGiaseR-NEYTls8CMXlzKlSV9qP_tszgitB86_D",
+      "pinnedRoot": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+      "telStatus": "issued",
+      "checkedAt": "2026-10-22T00:57:25Z",
+      "presentation": {
+        "verdict": false,
+        "reasons": [
+          "amount 300000.0 greater than maxAmount 250000.00"
+        ]
+      },
+      "binding": {
+        "verdict": true,
+        "reasons": [],
+        "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+        "validUntil": 1795221635
+      },
+      "reasons": [
+        "presentation : amount 300000.0 greater than maxAmount 250000.00"
+      ],
+      "mandate": {
+        "agentAid": "EBFA-pGiaseR-NEYTls8CMXlzKlSV9qP_tszgitB86_D",
+        "maxAmount": "250000.00",
+        "asset": "EURX",
+        "validUntil": "2026-11-21T00:21:45Z",
+        "purpose": "Cross-chain transfer EURX to SGDX, Programmable Compliance demo corridor",
+        "issuerAid": "EK_1LNMeKYloyNJMM3Xa6ogCOg-hgkwSZWRUp9lV8CjT",
+        "oorSaid": "EJGIztqZ-A0VL8yDqTVEp0VmUloZbA3AbiTlHq4p294g",
+        "intent": {
+          "authorized": false,
+          "reasons": [
+            "amount 300000.0 greater than maxAmount 250000.00"
+          ],
+          "requested": {
+            "amount": "300000.0",
+            "asset": "EURX",
+            "atTime": "2026-10-22T00:57:26Z"
+          }
+        }
+      }
+    },
+    "kyc_cp": {
+      "by_fi_sg1_on_fi_fr": {
+        "check": "FI SG1 node, before signing its arrival attestation : payer's vLEI presentation (OOR, or mandate and granter's OOR), wallet linkage, expected LEI",
+        "party": "fi-fr-agent-mandate",
+        "presented_lei": "DEMO00FIFRPAYER00119",
+        "expected_lei": "DEMO00FIFRPAYER00119",
+        "role": "MANDAT",
+        "roleTitle": "Head of Payments",
+        "verdict": false,
+        "reasons": [
+          "presentation : amount 300000.0 greater than maxAmount 250000.00"
+        ],
+        "telStatus": "issued",
+        "checkedAt": "2026-10-22T00:57:25Z"
+      }
+    },
+    "test_2_cap_enforced_by_the_chain": {
+      "attestation_obtained_for_eur": "1000.0",
+      "signed": true,
+      "maxAmount": "250000.0",
+      "runFor_amount_out_of_mandate": "PolicyRejected(VleiAttestationPolicy: amount above the mandate)",
+      "control_runFor_amount_within_mandate": "Continue"
+    }
+  },
+  "balances_before": {
+    "time": "2026-10-22T00:57:24.503Z",
+    "payer_wEURX": "1000.0",
+    "payer_EURX": "2500.0",
+    "adapter_lock_EURX": "8500.0",
+    "supply_wEURX_source": "1000.0",
+    "arrival_reserve_EURX": "3000.0",
+    "pool_EURX": "75038.214290424923358889",
+    "pool_SGDX": "90686.028013712295529784",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "14543.922624847571947601",
+    "composer_wEURX": "0.0"
+  },
+  "balances_after": {
+    "time": "2026-10-22T00:57:29.916Z",
+    "payer_wEURX": "1000.0",
+    "payer_EURX": "2500.0",
+    "adapter_lock_EURX": "8500.0",
+    "supply_wEURX_source": "1000.0",
+    "arrival_reserve_EURX": "3000.0",
+    "pool_EURX": "75038.214290424923358889",
+    "pool_SGDX": "90686.028013712295529784",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "14543.922624847571947601",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "expected_result": true,
+  "measured_at": "2026-10-22T00:57:31.622Z"
+}

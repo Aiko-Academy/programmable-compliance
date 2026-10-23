@@ -1,0 +1,174 @@
+{
+ "contractName": "InstitutionSignatureVerifier",
+ "abi": [
+  {
+   "type": "constructor",
+   "inputs": [
+    {
+     "name": "registry_",
+     "type": "address",
+     "internalType": "contract ComplianceKeyRegistry"
+    },
+    {
+     "name": "domainOverride",
+     "type": "address",
+     "internalType": "address"
+    }
+   ],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "function",
+   "name": "digest",
+   "inputs": [
+    {
+     "name": "s",
+     "type": "tuple",
+     "internalType": "struct InstitutionSignatureVerifier.Sig",
+     "components": [
+      {
+       "name": "uetr",
+       "type": "bytes16",
+       "internalType": "bytes16"
+      },
+      {
+       "name": "checkCode",
+       "type": "string",
+       "internalType": "string"
+      },
+      {
+       "name": "verdict",
+       "type": "bool",
+       "internalType": "bool"
+      },
+      {
+       "name": "canonicalDataHash",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "policyRef",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "timestamp",
+       "type": "uint256",
+       "internalType": "uint256"
+      }
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "domainSeparator",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "registry",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "contract ComplianceKeyRegistry"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "verify",
+   "inputs": [
+    {
+     "name": "orgId",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "s",
+     "type": "tuple",
+     "internalType": "struct InstitutionSignatureVerifier.Sig",
+     "components": [
+      {
+       "name": "uetr",
+       "type": "bytes16",
+       "internalType": "bytes16"
+      },
+      {
+       "name": "checkCode",
+       "type": "string",
+       "internalType": "string"
+      },
+      {
+       "name": "verdict",
+       "type": "bool",
+       "internalType": "bool"
+      },
+      {
+       "name": "canonicalDataHash",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "policyRef",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "timestamp",
+       "type": "uint256",
+       "internalType": "uint256"
+      }
+     ]
+    },
+    {
+     "name": "r",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "sigS",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "qx",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "qy",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bool",
+     "internalType": "bool"
+    }
+   ],
+   "stateMutability": "view"
+  }
+ ]
+}

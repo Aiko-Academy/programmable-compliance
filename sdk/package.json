@@ -1,0 +1,28 @@
+{
+  "name": "programmable-compliance-toolkit",
+  "version": "0.1.1",
+  "description": "Programmable Compliance Toolkit: SDK and ABIs",
+  "license": "AGPL-3.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./abi/*": "./abi/*"
+  },
+  "files": ["dist", "abi"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test --import tsx dist/../test/*.test.ts"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.9.0",
+    "ethers": "^6.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3"
+  }
+}

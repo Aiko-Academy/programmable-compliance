@@ -1,0 +1,87 @@
+{
+  "_avertissement": "Ecosysteme vLEI de TEST. La racine est une racine de test qui tient la place de GLEIF External ; ce n'est PAS GLEIF. Tous les LEI commencent par DEMO et sont fictifs (absence prouvee dans sorties/preuve-lei-absents-gleif.json).",
+  "witnesses": {
+    "temoin-1": {
+      "port": 5642
+    },
+    "temoin-2": {
+      "port": 5643
+    },
+    "temoin-3": {
+      "port": 5644
+    }
+  },
+  "schemaServer": {
+    "port": 7723
+  },
+  "entites": {
+    "racine": {
+      "keystore": "racine-test",
+      "alias": "racine-test",
+      "label": "TEST ROOT (tient la place de GLEIF External, ce n'est pas GLEIF)",
+      "lei": null
+    },
+    "qvi": {
+      "keystore": "qvi-test",
+      "alias": "qvi-test",
+      "label": "QVI de test",
+      "lei": "DEMO00QVITESTGL1PC75",
+      "delegueePar": "racine"
+    },
+    "le-fifr": {
+      "keystore": "le-fifr",
+      "alias": "le-fifr",
+      "label": "FI FR (banque du payeur)",
+      "lei": "DEMO00FIFRPAYER00119"
+    },
+    "le-fisg1": {
+      "keystore": "le-fisg1",
+      "alias": "le-fisg1",
+      "label": "FI SG1 (banque du beneficiaire)",
+      "lei": "DEMO00FISG1BENEF0172"
+    },
+    "pers-fifr": {
+      "keystore": "pers-fifr",
+      "alias": "pers-fifr",
+      "label": "Personne OOR de FI FR",
+      "lei": "DEMO00FIFRPAYER00119",
+      "le": "le-fifr",
+      "personLegalName": "Head of Payments, FI FR",
+      "officialRole": "Head of Payments"
+    },
+    "pers-fisg1": {
+      "keystore": "pers-fisg1",
+      "alias": "pers-fisg1",
+      "label": "Personne OOR de FI SG1",
+      "lei": "DEMO00FISG1BENEF0172",
+      "le": "le-fisg1",
+      "personLegalName": "Head of Treasury, FI SG1",
+      "officialRole": "Head of Treasury",
+      "ecr": {
+        "engagementContextRole": "Settlement Operations Contact"
+      }
+    },
+    "pers-fifr-ancien": {
+      "keystore": "pers-fifr-ancien",
+      "alias": "pers-fifr-ancien",
+      "label": "Personne OOR de FI FR dont l'OOR sera revoque (demonstration de revocation)",
+      "lei": "DEMO00FIFRPAYER00119",
+      "le": "le-fifr",
+      "personLegalName": "Former Head of Operations, FI FR",
+      "officialRole": "Head of Operations"
+    },
+    "agent-fifr": {
+      "keystore": "agent-fifr",
+      "alias": "agent-fifr",
+      "label": "Agent mandate par le porteur de l'OOR de FI FR",
+      "lei": null,
+      "mandate": {
+        "emetteur": "pers-fifr",
+        "maxAmount": "250000.00",
+        "asset": "EURX",
+        "validiteJours": 30,
+        "purpose": "Cross-chain transfer EURX to SGDX, Programmable Compliance demo corridor"
+      }
+    }
+  }
+}

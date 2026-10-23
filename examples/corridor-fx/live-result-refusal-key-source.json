@@ -1,0 +1,66 @@
+{
+  "schema": 3,
+  "pass": "refusal-key-revoked-at-source",
+  "amount_eur": "1000.0",
+  "uetr": "0xadac3057b61242ad5d74707b2c006652",
+  "precheck_before_revocation": {
+    "ok": true
+  },
+  "balances_before": {
+    "time": "2026-10-20T09:57:05.763Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "500.0",
+    "adapter_lock_EURX": "6500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "500.0",
+    "pool_EURX": "74038.214290424923358889",
+    "pool_SGDX": "92154.584436800588607297",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "11606.85452063011054254",
+    "composer_wEURX": "0.0"
+  },
+  "legs": [
+    {
+      "leg": "key-revocation-at-source",
+      "chain": "sepolia",
+      "tx": "0x9abf792d248fa63539e5969ad0b2e014c6f93e49085cc42c3ce12d5acecf5eac",
+      "block": 11954541,
+      "status": "ok",
+      "note": "the node key is revoked at the source seal AFTER signing the attestation, before the send"
+    },
+    {
+      "leg": "send-refuse",
+      "chain": "sepolia",
+      "tx": "0x98a14dfda56fa9b51f02a6eb4afc72ea09e9edf027c3cb1f78cd180a89958f14",
+      "status": "reverted",
+      "gas_used": "1776368",
+      "note": "attestation signed by a key revoked at the source seal : refused at the source wrapper's gated transfer, before any lock"
+    },
+    {
+      "leg": "key-restoration-at-source",
+      "chain": "sepolia",
+      "tx": "0x048b8d1d413e632e0a5dc1652754a9fd9ed42e49ae0c7a6321c81e2192e879de",
+      "block": 11954546,
+      "status": "ok"
+    }
+  ],
+  "precheck_after_revocation": {
+    "ok": true
+  },
+  "balances_after": {
+    "time": "2026-10-20T09:58:18.492Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "500.0",
+    "adapter_lock_EURX": "6500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "500.0",
+    "pool_EURX": "74038.214290424923358889",
+    "pool_SGDX": "92154.584436800588607297",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "11606.85452063011054254",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "key_restored": true,
+  "measured_at": "2026-10-20T09:58:19.385Z"
+}

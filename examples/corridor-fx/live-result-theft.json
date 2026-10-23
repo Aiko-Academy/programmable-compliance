@@ -1,0 +1,64 @@
+{
+  "schema": 3,
+  "pass": "refusal-attestation-theft",
+  "amount_eur": "1000.0",
+  "uetr": "0x092722aed7a79b426fda3264b1e1547f",
+  "thief": {
+    "fi": "FI SG2",
+    "wallet": "0x96495854Da659fa8e75781bbd1D4767721eff401",
+    "vlei": "aucun"
+  },
+  "submitted_transaction": false,
+  "vlei": {
+    "warning": "pinned TEST root (not GLEIF), fictional LEIs prefixed DEMO",
+    "source_policy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+    "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+    "test_1_attester_for_the_wallet_of_fi_sg2": {
+      "signed": false,
+      "reasons": [
+        "wallet attachment: address 0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38 differs from the expected 0x96495854Da659fa8e75781bbd1D4767721eff401",
+        "wallet attachment: EVM counter-signature from another address (0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38) than the wallet 0x96495854Da659fa8e75781bbd1D4767721eff401",
+        "wallet attachment: the attachment targets another address"
+      ]
+    },
+    "test_2_attestation_of_fi_fr_presented_by_fi_sg2": {
+      "attestation_for": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+      "lei": "DEMO00FIFRPAYER00119",
+      "runFor_source": "PolicyRejected(VleiAttestationPolicy: attestation is for another wallet)"
+    },
+    "control_same_attestation_for_fi_fr": {
+      "runFor_source": "Continue"
+    }
+  },
+  "balances_before": {
+    "time": "2026-10-22T01:02:46.051Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "500.0",
+    "adapter_lock_EURX": "9500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "2000.0",
+    "pool_EURX": "76038.214290424923358889",
+    "pool_SGDX": "89217.685722442416236463",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "16012.264916117451240922",
+    "composer_wEURX": "0.0",
+    "fi_sg2_wEURX": "0.0"
+  },
+  "balances_after": {
+    "time": "2026-10-22T01:02:49.990Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "500.0",
+    "adapter_lock_EURX": "9500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "2000.0",
+    "pool_EURX": "76038.214290424923358889",
+    "pool_SGDX": "89217.685722442416236463",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "16012.264916117451240922",
+    "composer_wEURX": "0.0",
+    "fi_sg2_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "expected_result": true,
+  "measured_at": "2026-10-22T01:02:52.355Z"
+}

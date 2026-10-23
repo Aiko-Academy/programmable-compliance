@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: AGPL-3.0
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Build
+        run: forge build
+      - name: Test
+        run: forge test
+      - name: Offline gates
+        run: node scripts/ci/tous.mjs --rapide

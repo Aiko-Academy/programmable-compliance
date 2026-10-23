@@ -1,0 +1,192 @@
+{
+  "$id": "EGRu3n2o-pRa03-WoWSs3L51vbIi77FAJMjaVhm37kfK",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Transfer Mandate",
+  "description": "Demonstration schema (test, outside the official vLEI): transfer mandate issued by the holder of a vLEI OOR to an agent, bounded in amount, asset and duration.",
+  "type": "object",
+  "credentialType": "TransferMandate",
+  "version": "1.0.0",
+  "properties": {
+    "v": {
+      "description": "Version",
+      "type": "string"
+    },
+    "d": {
+      "description": "Credential SAID",
+      "type": "string"
+    },
+    "u": {
+      "description": "One time use nonce",
+      "type": "string"
+    },
+    "i": {
+      "description": "Issuer AID (holder of the OOR vLEI credential)",
+      "type": "string"
+    },
+    "ri": {
+      "description": "Credential status registry",
+      "type": "string"
+    },
+    "s": {
+      "description": "Schema SAID",
+      "type": "string"
+    },
+    "a": {
+      "oneOf": [
+        {
+          "description": "Attributes block SAID",
+          "type": "string"
+        },
+        {
+          "$id": "EOaSbu2x2rPS_2CRimP26f1jm81imu7WhIY87qQfh25p",
+          "description": "Attributes block",
+          "type": "object",
+          "properties": {
+            "d": {
+              "description": "Attributes block SAID",
+              "type": "string"
+            },
+            "i": {
+              "description": "Agent AID (issuee)",
+              "type": "string"
+            },
+            "dt": {
+              "description": "Issuance date time",
+              "type": "string",
+              "format": "date-time"
+            },
+            "agentAid": {
+              "description": "AID of the agent receiving the mandate, equal to the issuee",
+              "type": "string"
+            },
+            "maxAmount": {
+              "description": "Maximum amount per transfer, decimal string",
+              "type": "string",
+              "pattern": "^[0-9]+(\\.[0-9]+)?$"
+            },
+            "asset": {
+              "description": "Asset identifier the mandate is restricted to",
+              "type": "string"
+            },
+            "validUntil": {
+              "description": "End of validity of the mandate, ISO 8601 date time",
+              "type": "string",
+              "format": "date-time"
+            },
+            "purpose": {
+              "description": "Purpose of the mandate",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "d",
+            "i",
+            "dt",
+            "agentAid",
+            "maxAmount",
+            "asset",
+            "validUntil",
+            "purpose"
+          ]
+        }
+      ]
+    },
+    "e": {
+      "oneOf": [
+        {
+          "description": "Edges block SAID",
+          "type": "string"
+        },
+        {
+          "$id": "EEO1xDrl6bXIYXg5mNwwWPk3pyjOOy7NfBsl5VPu5HA8",
+          "description": "Edges block",
+          "type": "object",
+          "properties": {
+            "d": {
+              "description": "Edges block SAID",
+              "type": "string"
+            },
+            "oor": {
+              "description": "Chain to the OOR vLEI credential held by the issuer of this mandate",
+              "type": "object",
+              "properties": {
+                "n": {
+                  "description": "SAID of the ACDC to which the edge connects",
+                  "type": "string"
+                },
+                "s": {
+                  "description": "SAID of required schema of the credential pointed to by this node",
+                  "type": "string",
+                  "const": "EBNaNu-M9P5cgrnfl2Fvymy4E_jvxxyjb70PRtiANlJy"
+                },
+                "o": {
+                  "description": "Operator indicating the issuer of this mandate is the issuee of the OOR",
+                  "type": "string",
+                  "const": "I2I"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "n",
+                "s",
+                "o"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "d",
+            "oor"
+          ]
+        }
+      ]
+    },
+    "r": {
+      "oneOf": [
+        {
+          "description": "Rules block SAID",
+          "type": "string"
+        },
+        {
+          "$id": "EF2f5c625-UwnCkPXWqEJnfAQk5nfkd3yWXKMkD7CsWz",
+          "description": "Rules block",
+          "type": "object",
+          "properties": {
+            "d": {
+              "description": "Rules block SAID",
+              "type": "string"
+            },
+            "usageDisclaimer": {
+              "description": "Usage Disclaimer",
+              "type": "object",
+              "properties": {
+                "l": {
+                  "description": "Associated legal language",
+                  "type": "string",
+                  "const": "Demonstration only. This Transfer Mandate is a test credential outside the vLEI Ecosystem Governance Framework; it grants no authority outside this demonstration."
+                }
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "d",
+            "usageDisclaimer"
+          ]
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "v",
+    "d",
+    "i",
+    "ri",
+    "s",
+    "a",
+    "e",
+    "r"
+  ]
+}

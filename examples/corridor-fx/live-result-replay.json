@@ -1,0 +1,61 @@
+{
+  "schema": 3,
+  "pass": "replay-of-the-compliant-pass",
+  "amount_eur": "1000.0",
+  "uetr": "0x1a3d5aa342d009c0940f130f09f5897d",
+  "replayed_pass": {
+    "measured_at": "2026-10-18T07:02:26.832Z",
+    "guid": "0x16f5991fc2aa8ae5a6b5184f3d9806aa35ee8924de8b61658c1be443da96b76d",
+    "transfer_source": "0x01ac4af70b90e90b394c10c355185e94d8d3b84ece75cda875dcd504995fa409"
+  },
+  "client_zk_policy_precheck": {
+    "ok": false,
+    "reason": "PolicyRejected(ZkSanctionsWrapperPolicy: proof already used)"
+  },
+  "balances_before": {
+    "time": "2026-10-18T07:25:35.467Z",
+    "payer_wEURX": "3000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "4000.0",
+    "supply_wEURX_source": "3000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "72038.214290424923358889",
+    "pool_SGDX": "95092.339865823831620445",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "7934.699215167099333608",
+    "composer_wEURX": "0.0"
+  },
+  "legs": [
+    {
+      "leg": "send-refuse",
+      "chain": "sepolia",
+      "tx": "0x901c47fe62005ff5305b33df849f4c263fe7e02081898857952bbb1094d2e0e6",
+      "status": "reverted",
+      "gas_used": "1722277",
+      "note": "same uetr, same parties, same amount : see refuse_par for the policy that refuses, read in the trace"
+    }
+  ],
+  "balances_after": {
+    "time": "2026-10-18T07:26:26.923Z",
+    "payer_wEURX": "3000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "4000.0",
+    "supply_wEURX_source": "3000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "72038.214290424923358889",
+    "pool_SGDX": "95092.339865823831620445",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "7934.699215167099333608",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "measured_at": "2026-10-18T07:26:27.898Z",
+  "reason_read_from_the_transaction": "PolicyRunRejected(transferFrom, 0xB00C…3627, \"LegBindingPolicy: proof already used\"), read in the trace (cast run) on 2026-10-18",
+  "refusing_policy": "AtelierEnvelopeBindingPolicy / LegBindingPolicy (0xB00C…3627), single use of the source leg's linkage (subject, uetr, from, to, montant) : it is the SECOND policy of the chain and refuses before the sanctions policy ; the sanctions policy was not reached in the transaction",
+  "sanctions_policy_would_have_refused_too": "The client pre-check (runFor of 0xE01A…3376, eth_call) also returns \"ZkSanctionsWrapperPolicy: proof already used\" : its own single-use registry is also filled by the compliant pass. That refusal is not the transaction's, it is a direct read of the policy",
+  "gas_read_in_the_trace": {
+    "manager_run": 124810,
+    "LegBindingPolicy_run": 19573,
+    "transaction_complete": 1722277
+  }
+}

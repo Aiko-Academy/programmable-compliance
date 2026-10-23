@@ -1,0 +1,26 @@
+{
+  "entreesPubliques": [
+    "0x1076ee3d0a623f3ef1b1402c860d60e369aa6d5a148203a9a60fbb2e33cf5a9f",
+    "0x2f89f254b775c73b47fd87b614c0d681fc37fdd893fb703a04031e26c3bc0286",
+    "1",
+    "0xb1"
+  ],
+  "id": "0xb1",
+  "idType": 1,
+  "liaison": "0x2f89f254b775c73b47fd87b614c0d681fc37fdd893fb703a04031e26c3bc0286",
+  "listId": "0xbbfcc9b4fbc00143240a7861d5cc633739b695c6381a12753ddc1a5a7f4bdf24",
+  "partie": "beneficiaire",
+  "preuve": [
+    "0x1e52f17104ca02ff0a4a72f1b8de6569e3578b998565e34d92e411e18ee232ae",
+    "0x2c7e8d7c61fe6baca5814d79518c9d867ae080ae5c097a2780140f043fc667e7",
+    "0x08fbba7decf5680867c460dd6385c9dcdcf668f3012928f2e23a5d7f97f21fec",
+    "0x0815be3fd15379bc9bc9803c48e3d78e718f12059b37f262f9c9304af5fa5d8d",
+    "0x09f624568e6cae5dad79ba55ce9b333e20c33f126b7e97f2bce264d73f7dc687",
+    "0x094065ed34a2815cc075923b30473126cdb919ab815019e8cf566db376a3a1ff",
+    "0x174d0cca73a27cbdfd8d15c04e18eecdd500800ff84d86648ba04cc8239056fa",
+    "0x2865702a1e17574fde374c76f6d2ce2eb90f5a990b62f352ab60105611e28a42"
+  ],
+  "racine": "0x1076ee3d0a623f3ef1b1402c860d60e369aa6d5a148203a9a60fbb2e33cf5a9f",
+  "statut": "setup de demonstration, liste de demonstration",
+  "version": 1
+}

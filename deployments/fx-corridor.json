@@ -16,15 +16,27 @@
         "side": "from (payer)",
         "role_mask": 10,
         "conduit": "source.contracts.RETURN_RECEIVER (rail infrastructure, not a party, not checked)",
-        "creation_tx": "0x3535fe76ce0792c6e0d57b93094aee4e5517651bafa06db814672f06839b2afc",
-        "block": 11965986
+        "creation_tx": "0xde40872fe207b617ec83e118db102e9dfa73c72dcad57af5197a6412fd47897c",
+        "block": 11975961
       },
       "destination": {
         "policy": "destination.contracts.VleiAttestationPolicy",
         "side": "to (beneficiary)",
         "role_mask": 6,
-        "creation_tx": "0xe356c5720a387b25e9c02adfe17afcbb2542544e985deec24d9a51c45ff3b95a",
-        "block": 321558108
+        "creation_tx": "0xc17b10c941a74d2357639ccaef9f6b94778611581099606a7d5eb6e2503e57c4",
+        "block": 322017949
+      },
+      "version": 2,
+      "replaces": {
+        "source.VleiAttestationPolicy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+        "destination.VleiAttestationPolicy": "0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc",
+        "note": "Version 1 of the policy, removed from both selectors on 2026-10-23 and no longer in service. Recorded results dated before that day cite it."
+      },
+      "reliance_terms": {
+        "note": "Version 2 lets the relying party pin the terms it invokes the attestation under. The terms are part of the signed attestation and are emitted in the VleiReliedUpon event as a tuple (termsHash, allocation, disputeRef, sourceRef).",
+        "termsHash": "0xf0d0eeff51175590b4e985e4386fd5a8003f8cb597244e3e4206d4e717bfa71f",
+        "allocation": 1,
+        "disputeRef": "0x88ea7df5eceeafe877dbbe7de2753f280ae89396fb34e11a004ea1f459d6664d"
       }
     }
   },
@@ -65,7 +77,7 @@
       "TestAttestationValidatorPolicy": "0x6fC68FcA0f9FcAe4fCd3D2C36b5D05323EeF85f4",
       "BeneficiaryGate": "0xE833f363AbB0f601eA3d0Fcbb871C1cC589f236B",
       "AtelierZkSanctionsWrapperPolicy": "0xE01A715f3C9bF529f50d93561ec9Ac369fe53376",
-      "VleiAttestationPolicy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237"
+      "VleiAttestationPolicy": "0x76D62740b6109b7F45249053aa70d51eF83D5280"
     }
   },
   "destination": {
@@ -90,7 +102,7 @@
       "AtelierEnvelopeBindingPolicy": "0x481f3a553F5481553A6a8dA1D5708A4c91f9aD78",
       "TestAttestationValidatorPolicy": "0x73f7587bed5c0988dBA9513e61CACa2016edD98e",
       "AtelierZkSanctionsWrapperPolicy": "0xF06E68B2ba0596b6b5aceaf14A73e2df46D51057",
-      "VleiAttestationPolicy": "0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc"
+      "VleiAttestationPolicy": "0x4172b03746B6C480278AD0394B2a9790181C8b78"
     },
     "uniswapV3Canonical": {
       "UniswapV3Factory": "0x248AB79Bbb9bC29bB72f7Cd42F17e054Fc40188e",

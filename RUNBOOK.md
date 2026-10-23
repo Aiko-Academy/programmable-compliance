@@ -80,22 +80,23 @@ verifies the verifier's signature, not KERI or ACDC. The expected values are in 
 # Sepolia: the policy list of the source wEURX, for transfer (0xa9059cbb) and transferFrom (0x23b872dd)
 cast call 0x9b4Abe496A3F387d2D7723915844C9bEF96C7a26 'getPolicies(address,bytes4)(address[])' \
   0x738DE4A03a18891e07Ff001323cA4d150d4B2C84 0xa9059cbb --rpc-url <sepolia rpc>
-# its configuration for that wrapper: (enabled, side, maxAge, roleMask, rootAid)
-cast call 0x7F2f0E02eE528B991fF527ceACBFef767BEbb237 'configOf(address)((bool,uint8,uint32,uint8,bytes32))' \
+# its configuration for that wrapper: (enabled, side, maxAge, roleMask, rootAid, termsHash, allocation, disputeRef)
+cast call 0x76D62740b6109b7F45249053aa70d51eF83D5280 'configOf(address)((bool,uint8,uint32,uint8,bytes32,bytes32,uint8,bytes32))' \
   0x738DE4A03a18891e07Ff001323cA4d150d4B2C84 --rpc-url <sepolia rpc>
 # the verifier is registered
-cast call 0x7F2f0E02eE528B991fF527ceACBFef767BEbb237 'isVerifier(address)(bool)' \
+cast call 0x76D62740b6109b7F45249053aa70d51eF83D5280 'isVerifier(address)(bool)' \
   0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6 --rpc-url <sepolia rpc>
 ```
 
 On Arbitrum Sepolia, the same three reads use the manager `0x21AD6DC26A2F727A7b329cEB1279Ffe64e2AC269`, the wrapper
-`0xd8b0f8795141a0B2736BeF452726A39d55638f40` and the policy `0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc`.
+`0xd8b0f8795141a0B2736BeF452726A39d55638f40` and the policy `0x4172b03746B6C480278AD0394B2a9790181C8b78`.
 
 | read | expected, source wEURX | expected, delivery wSGDX |
 |---|---|---|
 | `getPolicies`, both selectors | the vLEI policy is the last entry, after the sanctions policy | same |
 | `configOf` | `enabled` true, `side` 0 (`from`, the payer), `maxAge` 3600, `roleMask` 10 (OOR or agent under a mandate) | `enabled` true, `side` 1 (`to`, the beneficiary), `maxAge` 3600, `roleMask` 6 (OOR or ECR) |
 | `configOf`, `rootAid` | `keccak256` of the pinned root identifier, `generation.vlei.pinned_root_keccak256` | same |
+| `configOf`, `termsHash`, `allocation`, `disputeRef` | the reliance terms pinned by the relying party, `generation.vlei.reliance_terms` (allocation 1) | same |
 | `isVerifier(generation.vlei.verifier)` | true | true |
 
 The role mask has one bit per role: OOR is `1 << 1`, ECR is `1 << 2`, agent under a mandate is `1 << 3`. To recompute the
@@ -104,19 +105,22 @@ root digest: `cast keccak <generation.vlei.pinned_root_aid>`.
 What each transfer relied upon is an event of the policy, emitted in the same transaction as the gated transfer:
 
 ```
-cast logs --from-block 11965986 --address 0x7F2f0E02eE528B991fF527ceACBFef767BEbb237 \
-  'VleiReliedUpon(address indexed subject,bytes16 indexed uetr,address indexed wallet,bytes20 lei,uint8 role,bytes32 credentialSaid,bytes32 holderAid,bytes32 rootAid,bytes32 mandateSaid,uint64 verifiedAt,address verifier)' \
+cast logs --from-block 11975961 --address 0x76D62740b6109b7F45249053aa70d51eF83D5280 \
+  'VleiReliedUpon(address indexed subject,bytes16 indexed uetr,address indexed wallet,bytes20 lei,uint8 role,bytes32 credentialSaid,bytes32 holderAid,bytes32 rootAid,bytes32 mandateSaid,uint64 verifiedAt,(bytes32 termsHash,uint8 allocation,bytes32 disputeRef,bytes32 sourceRef) terms,address verifier)' \
   --rpc-url <sepolia rpc>
 ```
 
-On Arbitrum Sepolia, read from block 321558108 at `0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc`. The event topic is
-`0xd2301df7a27533d426a7a8f98de3468e691786797ea5071d789a5b77b9c1b32c`; the indexed fields are the wrapper, the uetr and
+On Arbitrum Sepolia, read from block 322017949 at `0x4172b03746B6C480278AD0394B2a9790181C8b78`. The event topic is
+`0xa8fb2566724396e54bf36ca170d6fe3205325a274dd4de8381e680bbddd85034`; the indexed fields are the wrapper, the uetr and
 the wallet of the controlled party. `lei` is the 20 ASCII characters of the LEI; `credentialSaid`, `holderAid`,
 `rootAid` and `mandateSaid` are keccak256 digests of the CESR identifiers (zero `mandateSaid` when no mandate);
-`verifiedAt` is the time of the off-chain check, at most 3600 seconds before the block. An empty result with no error
+`verifiedAt` is the time of the off-chain check, at most 3600 seconds before the block. `terms` is the tuple of the reliance
+terms the attestation was invoked under: `termsHash`, `allocation` and `disputeRef` must equal the values pinned by the
+relying party in `configOf`, and `sourceRef` is the digest of the source the verifier consulted (signed, not checked by
+the chain). An empty result with no error
 means that no transfer has relied on the policy yet: the same read on `VerifierSet(address indexed verifier,bool active)`
-must return the registration of the verifier at the creation block, which proves the read itself works. Since
-2026-10-22 two conforming passes have relied on the policy on both chains (`demonstration_passes.conforming_vlei` and
+must return the registration of the verifier at the creation block, which proves the read itself works. Version 1 of the policy (removed from both selectors on 2026-10-23, see `generation.vlei.replaces`) was in service from
+2026-10-22; the recorded results dated before 2026-10-23 cite it. Two conforming passes relied on it on both chains (`demonstration_passes.conforming_vlei` and
 `conforming_vlei_agent_mandate`), and `scripts/demo/corridor-fx-e2e.mjs` reads their events (next section).
 
 ### Replaying the FX corridor from the surface
@@ -318,9 +322,10 @@ metadata and fails on an unknown, deprecated or lzRead-flagged required DVN.
 ## 3. On-chain, bytecode against source (participant holding the toolkit)
 
 The strongest check compares the runtime bytecode deployed at each address to the bytecode compiled
-from source. This needs the compiled artifacts, which are produced from the private toolkit build and
-are not part of this surface. It is therefore the step run inside a deployment with designated
-participants who hold that build, not from the surface alone. The procedure is:
+from the sources published in `contracts/`. It needs a compiler (`forge build`) and a network, so it is not part
+of the offline gates. `node scripts/verifier-bytecode.mjs` runs it for the contracts in service on Hoodi and says,
+contract by contract, whether the code is equal; `deployments/hoodi-reference.json` records the contracts that
+were compiled from an earlier version. The procedure it follows is:
 
 1. compile the contracts under the profile that matches the deployment (the same compiler settings as
    the origin);
@@ -331,16 +336,15 @@ participants who hold that build, not from the surface alone. The procedure is:
 4. read the on-chain code with `eth_getCode` at the address, and strip its CBOR metadata the same way;
 5. compare. Equal, outside metadata and immutables, means the deployed contract is this source.
 
-In the toolkit this is implemented as `scripts/verifier-bytecode.mjs`. It is named here so a
-participant knows where it lives; it stays out of this surface because it depends on the build.
+The script is `scripts/verifier-bytecode.mjs`; the five LayerZero corridor contracts have no source in this
+repository and are checked by their ABI fingerprint only.
 
 ## 4. Provenance
 
-`MANIFEST.json` records `source_commit`: the toolkit commit the reproducible artifacts (`abi/` and
-`interfaces/`) are cut from. Those artifacts are unchanged since that commit. The LayerZero testnet
-legs were deployed later, as on-chain demonstration data: their trackers carry the `data` licence, are
-read from the chain, and make no reproducibility claim against `source_commit`. The `source_commit` is
-a bare commit fingerprint, never a private path or repository name.
+`MANIFEST.json` lists the sha256 fingerprint of every file. The ABIs of the contracts in `contracts/` are
+re-exported by `node scripts/export-abi.mjs` and match it; the interfaces are source files. The LayerZero testnet
+legs were deployed later, as on-chain demonstration data: their trackers carry the `data` licence, are read from
+the chain, and make no reproducibility claim. The manifest names no private path, repository or commit.
 
 ## 5. What is not in this surface
 

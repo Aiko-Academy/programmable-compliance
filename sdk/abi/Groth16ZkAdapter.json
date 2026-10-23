@@ -1,0 +1,76 @@
+{
+ "contractName": "Groth16ZkAdapter",
+ "abi": [
+  {
+   "type": "constructor",
+   "inputs": [
+    {
+     "name": "verifier_",
+     "type": "address",
+     "internalType": "address"
+    },
+    {
+     "name": "selector_",
+     "type": "bytes4",
+     "internalType": "bytes4"
+    }
+   ],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "function",
+   "name": "selector",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bytes4",
+     "internalType": "bytes4"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "verifier",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "address"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "verify",
+   "inputs": [
+    {
+     "name": "proof",
+     "type": "bytes",
+     "internalType": "bytes"
+    },
+    {
+     "name": "publicInputs",
+     "type": "uint256[]",
+     "internalType": "uint256[]"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bool",
+     "internalType": "bool"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "error",
+   "name": "BadProofLength",
+   "inputs": []
+  }
+ ]
+}

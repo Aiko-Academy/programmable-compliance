@@ -1,8 +1,7 @@
 {
   "source": "Aiko Academy, Programmable Compliance toolkit",
-  "source_commit": "",
-  "ecrit_le": "2026-10-22",
-  "note": "Surface d exposition redistribuable. Principe : ABI et interfaces reproductibles depuis la source par empreinte ; traceurs lus sur la chaine ; licences AGPL-3.0, GPL-3.0 ou MIT seulement ; aucun artefact BUSL, LZBL ni UNLICENSED ; aucune trace d outil. ABI verifiees contre le bytecode deploye par le RUNBOOK (etape en ligne, RPC).",
+  "ecrit_le": "2026-10-23",
+  "note": "Redistributable exposure surface. Contract ABIs are re-exportable from the published sources and matched by fingerprint; the five cross-chain corridor ABIs without source here are checked against the on-chain bytecode; trackers are read from the chain; AGPL-3.0, GPL-3.0 or MIT licences only; no BUSL, LZBL or UNLICENSED artefact; no tool trace. ABIs are verified against the deployed bytecode by the RUNBOOK (online step, RPC).",
   "licences_autorisees": [
     "AGPL-3.0",
     "GPL-3.0",
@@ -36,6 +35,10 @@
     },
     "abi/EnvelopeBindingPolicy.json": {
       "sha256": "cbbc0711f0947fe0c6d3f8d47fa2e9bd3c5914cff45f682834f109cfe88b2e78",
+      "licence": "AGPL-3.0"
+    },
+    "abi/ExampleToken.json": {
+      "sha256": "5fbdd0c60cb9f585a74a24396efbed5457ebfcfa81184fb5a99e6602761cb712",
       "licence": "AGPL-3.0"
     },
     "abi/Groth16ZkAdapter.json": {
@@ -95,7 +98,7 @@
       "licence": "AGPL-3.0"
     },
     "abi/VleiAttestationPolicy.json": {
-      "sha256": "2a4d366b3ece32e33b2eb507974f35ec96f34ed8e9f66148f2317ec0080aa34e",
+      "sha256": "263f4d3f5b4f402d07f6dda9c44313e2ea6e146bd73539da073050ed9ff061c0",
       "licence": "MIT"
     },
     "abi/ZkCheckRegistry.json": {
@@ -142,10 +145,6 @@
       "sha256": "4319731d15b615fc176a140caa21d77a57148d3c1aed0057a2cde4cb6cbe97b1",
       "licence": "data"
     },
-    "deployments/560048-uMINT-token.json": {
-      "sha256": "5ad6e26f565d98752186a69d0b2cb554abd2aad445244e52d2230bcda323745f",
-      "licence": "data"
-    },
     "deployments/560048-wCBDC-EUR.json": {
       "sha256": "6301262603c60553f0b940e481a648ff470464ca27c81c6786c831f553178fec",
       "licence": "data"
@@ -170,16 +169,16 @@
       "sha256": "6d1a209b8d7d0ed4e35f39c1f78eea38b134a8690d2da3623c7d01bbfe9f470d",
       "licence": "data"
     },
-    "deployments/560048-wuMINT.json": {
-      "sha256": "f3e95c90e26b70cf3dd4e457412b59cf2de46acbff539f227a0a09217516a9d0",
-      "licence": "data"
-    },
     "deployments/560048-zk.json": {
       "sha256": "d94090c6008e5c66ea965eaec7c24f12a9b459e7a5f9060042a7f1bd0902991a",
       "licence": "data"
     },
     "deployments/fx-corridor.json": {
-      "sha256": "b535c0acd2b614c8e4b6f2dbeae68de729bead2204951d034bc00a1fca21ebe0",
+      "sha256": "908bfe5aa5b334ff2e3298325a30f488326ef66190647927b3f193e3aaa2e20c",
+      "licence": "data"
+    },
+    "deployments/hoodi-reference.json": {
+      "sha256": "a94f33eeba8ee7885008b764adc20b21d3164356ecd9c70af731e649996aa00c",
       "licence": "data"
     }
   }

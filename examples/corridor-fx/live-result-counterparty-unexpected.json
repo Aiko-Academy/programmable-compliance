@@ -1,0 +1,147 @@
+{
+  "schema": 3,
+  "pass": "refusal-unexpected-counterparty",
+  "amount_eur": "1000.0",
+  "uetr": "0x1bca8570469f58fecc16cf58dd774718",
+  "submitted_transaction": false,
+  "instruction": {
+    "lei_expected_by_fi_fr": "DEMO00FISG2XXXXXXX81",
+    "presented_beneficiary_lei": "DEMO00FISG1BENEF0172",
+    "beneficiary": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde"
+  },
+  "vlei": {
+    "warning": "pinned TEST root (not GLEIF), fictional LEIs prefixed DEMO",
+    "source_policy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+    "arrival_policy": "0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc",
+    "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+    "pinned_root": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+    "payer": {
+      "party": "fi-fr-payeur",
+      "signed": true,
+      "lei": "DEMO00FIFRPAYER00119",
+      "expectedLei": "DEMO00FIFRPAYER00119",
+      "role": "OOR",
+      "roleTitle": "Head of Payments",
+      "credentialSaid": "EJGIztqZ-A0VL8yDqTVEp0VmUloZbA3AbiTlHq4p294g",
+      "holderAid": "EK_1LNMeKYloyNJMM3Xa6ogCOg-hgkwSZWRUp9lV8CjT",
+      "pinnedRoot": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+      "telStatus": "issued",
+      "checkedAt": "2026-10-22T00:57:45Z",
+      "presentation": {
+        "verdict": true,
+        "reasons": []
+      },
+      "binding": {
+        "verdict": true,
+        "reasons": [],
+        "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+        "validUntil": 1795220928
+      },
+      "reasons": [],
+      "roleAttestation": 1,
+      "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+      "digest": "0x29b3d3fe716d596489dd5ca3d08a917f69dabad0a0263e945818456eefe43a03",
+      "policy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+      "chainId": 11155111,
+      "verifiedAt": "2026-10-22T00:57:45.000Z",
+      "wallet": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+      "assetSymbol": "0x738DE4A03a18891e07Ff001323cA4d150d4B2C84",
+      "digests": {
+        "credentialSaid": "0x73c842b95424b57bced7a7f5936b2d610e5c0cea9564f829e02e09a0999b9c71",
+        "holderAid": "0xf4a0aea7741c76895cc602e3fcffa446f08dac06af186e02a9e10ee30a027bfa",
+        "rootAid": "0x91e842c42d075f74474f4d818c6204664c073141712a384ecc9555ea9472b686",
+        "mandateSaid": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "maxAmount": "0"
+    },
+    "beneficiary": {
+      "party": "fi-sg1-beneficiaire",
+      "signed": false,
+      "lei": "DEMO00FISG1BENEF0172",
+      "expectedLei": "DEMO00FISG2XXXXXXX81",
+      "role": "OOR",
+      "roleTitle": "Head of Treasury",
+      "credentialSaid": "EPhzt8xPU3QlD-4NUtoiGJVy-Miqlewlm7SZjsJ6W5Au",
+      "holderAid": "ENl8fdniYA73Q44Lix0_xF0_JSZ4PY8njBuJOo5ClL1I",
+      "pinnedRoot": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+      "telStatus": "issued",
+      "checkedAt": "2026-10-22T00:57:46Z",
+      "presentation": {
+        "verdict": true,
+        "reasons": []
+      },
+      "binding": {
+        "verdict": true,
+        "reasons": [],
+        "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+        "validUntil": 1795221635
+      },
+      "reasons": [
+        "KYC_CP : presented LEI DEMO00FISG1BENEF0172 differs from the expected LEI DEMO00FISG2XXXXXXX81"
+      ]
+    },
+    "kyc_cp": {
+      "by_fi_sg1_on_fi_fr": {
+        "check": "FI SG1 node, before signing its arrival attestation : payer's vLEI presentation (OOR, or mandate and granter's OOR), wallet linkage, expected LEI",
+        "party": "fi-fr-payeur",
+        "presented_lei": "DEMO00FIFRPAYER00119",
+        "expected_lei": "DEMO00FIFRPAYER00119",
+        "role": "OOR",
+        "roleTitle": "Head of Payments",
+        "verdict": true,
+        "reasons": [],
+        "telStatus": "issued",
+        "checkedAt": "2026-10-22T00:57:45Z"
+      },
+      "by_fi_fr_on_fi_sg1": {
+        "check": "FI FR, before sending : beneficiary's vLEI presentation, wallet linkage, expected LEI, then runFor of the arrival policy (Arbitrum)",
+        "party": "fi-sg1-beneficiaire",
+        "presented_lei": "DEMO00FISG1BENEF0172",
+        "expected_lei": "DEMO00FISG2XXXXXXX81",
+        "role": "OOR",
+        "roleTitle": "Head of Treasury",
+        "verdict": false,
+        "reasons": [
+          "KYC_CP : presented LEI DEMO00FISG1BENEF0172 differs from the expected LEI DEMO00FISG2XXXXXXX81"
+        ],
+        "telStatus": "issued",
+        "checkedAt": "2026-10-22T00:57:46Z",
+        "runFor_arbitrum": "not played : no signed attestation"
+      }
+    },
+    "client_precheck": {
+      "source": "not played",
+      "arrival": "not played"
+    },
+    "refusal": "FI FR's KYC_CP on FI SG1 refused : KYC_CP : presented LEI DEMO00FISG1BENEF0172 differs from the expected LEI DEMO00FISG2XXXXXXX81"
+  },
+  "balances_before": {
+    "time": "2026-10-22T00:57:44.533Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "1500.0",
+    "adapter_lock_EURX": "8500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "3000.0",
+    "pool_EURX": "75038.214290424923358889",
+    "pool_SGDX": "90686.028013712295529784",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "14543.922624847571947601",
+    "composer_wEURX": "0.0"
+  },
+  "balances_after": {
+    "time": "2026-10-22T00:57:47.737Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "1500.0",
+    "adapter_lock_EURX": "8500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "3000.0",
+    "pool_EURX": "75038.214290424923358889",
+    "pool_SGDX": "90686.028013712295529784",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "14543.922624847571947601",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "expected_result": true,
+  "measured_at": "2026-10-22T00:57:48.591Z"
+}

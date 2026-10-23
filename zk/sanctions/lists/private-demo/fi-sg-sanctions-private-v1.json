@@ -1,0 +1,12 @@
+{
+  "listId": "fi-sg-private-demo-v1",
+  "version": 1,
+  "date": "2026-10-18",
+  "source": "LISTE PRIVEE DE DEMONSTRATION de l'institution du beneficiaire (FI SG), entrees de test de l'atelier uniquement, aucun tiers. Publiee ici pour rejouer les temoins ; dans un usage reel elle ne quitterait pas l'institution, seule sa racine est publiee.",
+  "statut": "LISTE DE DEMONSTRATION. Ce n'est pas une liste de conformite, elle n'est ni complete ni a jour.",
+  "entries": [
+    {"type": "address", "id": "0x7e57000000000000000000000000000000005a12", "label": "ENTREE DE TEST de l'atelier : adresse que nous controlons, aucun tiers"},
+    {"type": "address", "id": "0x7e57000000000000000000000000000000005a13", "label": "ENTREE DE TEST de l'atelier : adresse que nous controlons, aucun tiers"},
+    {"type": "address", "id": "0x7e57000000000000000000000000000000005a14", "label": "ENTREE DE TEST de l'atelier : adresse que nous controlons, aucun tiers"}
+  ]
+}

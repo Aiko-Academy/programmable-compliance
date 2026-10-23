@@ -1,0 +1,22 @@
+{
+  "chainId": 560048,
+  "note": "The pack contracts whose runtime bytecode (metadata stripped, immutables masked) scripts/verifier-bytecode.mjs compares with the code in service on Hoodi. ComplianceKeyRegistry and ZkCheckRegistry are identical. RequiredChecksPolicy and LegBindingPolicy (EnvelopeBindingPolicy in this pack) differ: the deployed code was compiled from an earlier version of the sources whose revert messages, and for the binding policy the BINDING_DOMAIN constant, carried an earlier name; the sources here are the renamed version (restoring only those strings makes all four identical). InstitutionSignatureVerifier, TeeTrustRegistry, Groth16ZkAdapter and the sanctions Groth16 verifier are in service under an earlier compilation generation (lengths differ): same source, bytecode not comparable byte for byte, so they are absent here. Addresses come from the deployment trackers, re-read on the chain, never completed.",
+  "contracts": {
+    "RequiredChecksPolicy": {
+      "address": "0xD3A32c59fBD36497291faa44279bcD952a62d36f",
+      "origin": "RequiredChecksPolicy"
+    },
+    "EnvelopeBindingPolicy": {
+      "address": "0xFfd34fD118400eBB42698b5E25a7c7beF0CFb0BE",
+      "origin": "LegBindingPolicy"
+    },
+    "ComplianceKeyRegistry": {
+      "address": "0x7073B81020d3176b0dd7145d074E1679AaF9f0b4",
+      "origin": "ComplianceKeyRegistry"
+    },
+    "ZkCheckRegistry": {
+      "address": "0x684f79095B0499b661DAD47EF5fFEE35D61b9503",
+      "origin": "ZkCheckRegistry"
+    }
+  }
+}

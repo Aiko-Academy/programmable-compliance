@@ -1,0 +1,66 @@
+{
+  "schema": 2,
+  "pass": "return-residual",
+  "amount_eur": "1000.0",
+  "balances_before": {
+    "time": "2026-10-20T10:09:27.924Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "500.0",
+    "adapter_lock_EURX": "6500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "2000.0",
+    "pool_EURX": "74038.214290424923358889",
+    "pool_SGDX": "92154.584436800588607297",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "11606.85452063011054254",
+    "composer_wEURX": "0.0"
+  },
+  "legs": [
+    {
+      "leg": "lock",
+      "chain": "sepolia",
+      "tx": "0x924b175151b5d909f2120071459b399358f6f54c4b5a4fb75b5571c25ec8cdcd",
+      "status": "ok",
+      "lock_after": "7500.0"
+    },
+    {
+      "leg": "refused",
+      "chain": "arbitrum-sepolia",
+      "tx": "0xc59d54bc1888999365b34ffb03b927fcb5e169a619480c6133e68953e6a7dd77",
+      "status": "refused",
+      "reason": "PolicyRunRejected(0xa9059cbb, 0xF06E68B2ba0596b6b5aceaf14A73e2df46D51057, ZkSanctionsWrapperPolicy: SAN01 sanctions proof is not valid for this transfer)",
+      "wEURX_in_transit_at_the_composer": "1000.0"
+    },
+    {
+      "leg": "return-start",
+      "chain": "arbitrum-sepolia",
+      "tx": "0x1a675a9e2130f8d1bc0c4c8fdfe7ce1f5767ee90b1d213bcc230fc335d38786c",
+      "status": "ok",
+      "layerzero_fees": "0.000103699487578868"
+    },
+    {
+      "leg": "return-delivered",
+      "chain": "sepolia",
+      "tx": "0x49c7308489ce0eb9244e8578f5cc89c3882d5bc8807ecd2d8618b790dbf27ce1",
+      "block": 11954624,
+      "status": "ok",
+      "payer_wEURX_after": "2000.0",
+      "lock_after": "6500.0"
+    }
+  ],
+  "guid": "0x8db993938133be8757da8dff9fe6a0c847bbe030989fd564069db5ed3ff88466",
+  "balances_after": {
+    "time": "2026-10-20T10:14:01.141Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "500.0",
+    "adapter_lock_EURX": "6500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "2000.0",
+    "pool_EURX": "74038.214290424923358889",
+    "pool_SGDX": "92154.584436800588607297",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "11606.85452063011054254",
+    "composer_wEURX": "0.0"
+  },
+  "measured_at": "2026-10-20T10:14:02.390Z"
+}

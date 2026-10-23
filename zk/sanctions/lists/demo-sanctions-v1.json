@@ -1,0 +1,16 @@
+{
+  "listId": "demo-sanctions-v1",
+  "version": 1,
+  "date": "2026-10-18",
+  "source": "us_ofac_sdn (entrees Digital Currency Address), sous-ensemble releve dans mandala-onchain/exchanges/ibm/reference/compliance-ref.ts le 2026-10-18, NON reverifie contre la liste officielle ; plus deux entrees de test de l'atelier",
+  "statut": "LISTE DE DEMONSTRATION. Ce n'est pas une liste de conformite officielle, elle n'est ni complete ni a jour.",
+  "entries": [
+    {"type": "address", "id": "0x8589427373d6d84e98730d7795d8f6f8731fda16", "label": "Tornado Cash (designation OFAC publique)"},
+    {"type": "address", "id": "0x722122df12d4e14e13ac3b6895a86e84145b6967", "label": "Tornado Cash router (designation OFAC publique)"},
+    {"type": "address", "id": "0xd90e2f925da726b50c4ed8d0fb90ad053324f31b", "label": "Tornado Cash (designation OFAC publique)"},
+    {"type": "address", "id": "0xa160cdab225685da1d56aa342ad8841c3b53f291", "label": "Tornado Cash 100 ETH (designation OFAC publique)"},
+    {"type": "address", "id": "0xfec8a60023265364d066a1212fde3930f6ae8da7", "label": "Lazarus Group (designation OFAC publique)"},
+    {"type": "address", "id": "0x7e57000000000000000000000000000000005a11", "label": "ENTREE DE TEST de l'atelier : adresse que nous controlons, aucun tiers"},
+    {"type": "lei", "id": "TESTSANCTION00000001", "label": "ENTREE DE TEST de l'atelier : LEI fictif, aucun tiers"}
+  ]
+}

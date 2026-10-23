@@ -1,0 +1,580 @@
+{
+  "schema": 2,
+  "pass": "compliant-agent-under-mandate",
+  "amount_eur": "1000.0",
+  "route": 0,
+  "direct_quote": "1468.12820628224328841",
+  "pivot_quote": "1468.127710998349383889",
+  "expected_applied_rate": 1.4681282062822432,
+  "reference_sgd_per_eur": 1.4699548386,
+  "gap_to_reference_bps": -12.43,
+  "min_out": "1453.446924219420855526",
+  "balances_before": {
+    "time": "2026-10-22T01:05:12.953Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "2000.0",
+    "adapter_lock_EURX": "9500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "2000.0",
+    "pool_EURX": "76038.214290424923358889",
+    "pool_SGDX": "89217.685722442416236463",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "16012.264916117451240922",
+    "composer_wEURX": "0.0"
+  },
+  "legs": [
+    {
+      "leg": "wrap",
+      "chain": "sepolia",
+      "tx": "0xf77f544e8ff701b1d9156d03647916c727b66dbeccf6bb96f0810d8be1543741",
+      "block": 11966158,
+      "status": "ok",
+      "wEURX_before": "2000.0",
+      "wEURX_after": "3000.0"
+    },
+    {
+      "leg": "transfer-source",
+      "chain": "sepolia",
+      "tx": "0x1149a3221410399cbf806721480622f7c9f1ffbeef13ba9b17997688d1903593",
+      "block": 11966162,
+      "status": "ok",
+      "note": "transferFrom payer to adapter, gated by the source leg's Policy Manager (identity, attestation, linkage)",
+      "events": [
+        {
+          "name": "Transfer",
+          "args": [
+            "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+            "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
+            "569160388525917"
+          ]
+        },
+        {
+          "name": "Transfer",
+          "args": [
+            "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+            "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
+            "1000000000000000000000"
+          ]
+        },
+        {
+          "name": "Transfer",
+          "args": [
+            "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
+            "0x0000000000000000000000000000000000000000",
+            "1000000000000000000000"
+          ]
+        },
+        {
+          "name": "Transfer",
+          "args": [
+            "0x738DE4A03a18891e07Ff001323cA4d150d4B2C84",
+            "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
+            "1000000000000000000000"
+          ]
+        },
+        {
+          "name": "Transfer",
+          "args": [
+            "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
+            "0x6EDCE65403992e310A62460808c4b910D972f10f",
+            "569160388525917"
+          ]
+        },
+        {
+          "name": "Transfer",
+          "args": [
+            "0x6EDCE65403992e310A62460808c4b910D972f10f",
+            "0xcc1ae8Cf5D3904Cef3360A9532B477529b177cCE",
+            "569160388525917"
+          ]
+        }
+      ]
+    },
+    {
+      "leg": "lock",
+      "chain": "sepolia",
+      "tx": "0x1149a3221410399cbf806721480622f7c9f1ffbeef13ba9b17997688d1903593",
+      "block": 11966162,
+      "status": "ok",
+      "note": "adapter's withdrawTo : the wEURX is burned, the EURX stays locked with the adapter",
+      "events": [
+        {
+          "name": "TokenUnwrap",
+          "args": [
+            "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
+            "0x6ad8F75cfef4BA21499106acE487c3273902eD91",
+            "1000000000000000000000",
+            "0x9731D7b334612e71cf79D3bD37b5e94499cBa818"
+          ]
+        }
+      ],
+      "lock_after": "10500.0"
+    },
+    {
+      "leg": "swap",
+      "stage": 1,
+      "chain": "arbitrum-sepolia",
+      "tx": "0x26106aa502ab870c26fb1cb5375a89ab8bc77c76ccbb7fd14ba59ca363d8f770",
+      "block": 321566491,
+      "status": "ok",
+      "note": "first step : unwrapping the wEURX, EURX to the pool, SGDX returned to the composer (market, no control)",
+      "events": [
+        {
+          "address": "0x85711D76479fcB145Fa98de4322CA361b129BAe0",
+          "name": "Transfer",
+          "args": [
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "0x0000000000000000000000000000000000000000",
+            "1000000000000000000000"
+          ]
+        },
+        {
+          "address": "0x939731bADd5c55070f563CD0a5293e835586C91F",
+          "name": "Transfer",
+          "args": [
+            "0x85711D76479fcB145Fa98de4322CA361b129BAe0",
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "1000000000000000000000"
+          ]
+        },
+        {
+          "address": "0x85711D76479fcB145Fa98de4322CA361b129BAe0",
+          "name": "TokenUnwrap",
+          "args": [
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "1000000000000000000000",
+            "0x939731bADd5c55070f563CD0a5293e835586C91F"
+          ]
+        },
+        {
+          "address": "0x48660bD73791264D1cED1b3451e313a85d58c15b",
+          "name": "Transfer",
+          "args": [
+            "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "1468128206282243288410"
+          ]
+        },
+        {
+          "address": "0x939731bADd5c55070f563CD0a5293e835586C91F",
+          "name": "Transfer",
+          "args": [
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
+            "1000000000000000000000"
+          ]
+        },
+        {
+          "address": "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
+          "name": "Swap",
+          "args": [
+            "0x101F443B4d1b059569D643917553c771E1b9663E",
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "-1468128206282243288410",
+            "1000000000000000000000",
+            "65387044445828735714192391843",
+            "16619407393431555265954590",
+            "-3841"
+          ]
+        },
+        {
+          "address": "0x48660bD73791264D1cED1b3451e313a85d58c15b",
+          "name": "Transfer",
+          "args": [
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+            "1468128206282243288410"
+          ]
+        }
+      ]
+    },
+    {
+      "leg": "deliver",
+      "stage": 2,
+      "chain": "arbitrum-sepolia",
+      "tx": "0x26106aa502ab870c26fb1cb5375a89ab8bc77c76ccbb7fd14ba59ca363d8f770",
+      "block": 321566491,
+      "status": "ok",
+      "note": "second step : wrapping the SGDX then transferring the wSGDX to the beneficiary under the controls ; same transaction, therefore atomic",
+      "events": [
+        {
+          "address": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+          "name": "TokenWrap",
+          "args": [
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "1468128206282243288410",
+            "0x48660bD73791264D1cED1b3451e313a85d58c15b"
+          ]
+        },
+        {
+          "address": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+          "name": "Transfer",
+          "args": [
+            "0x0000000000000000000000000000000000000000",
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "1468128206282243288410"
+          ]
+        },
+        {
+          "address": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+          "name": "Transfer",
+          "args": [
+            "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+            "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+            "1468128206282243288410"
+          ]
+        }
+      ]
+    },
+    {
+      "leg": "unwrap",
+      "chain": "arbitrum-sepolia",
+      "tx": "0x3bc6098f233f81a9e71711ce3fa52f40f903bc847d034464f1b78df7962085d0",
+      "block": 321566545,
+      "status": "ok",
+      "wSGDX_before": "1468.12820628224328841",
+      "wSGDX_after": "0.0",
+      "SGDX_before": "16012.264916117451240922",
+      "SGDX_after": "17480.393122399694529332"
+    }
+  ],
+  "sanctions": {
+    "source_policy": "0xE01A715f3C9bF529f50d93561ec9Ac369fe53376",
+    "arrival_policy": "0xF06E68B2ba0596b6b5aceaf14A73e2df46D51057",
+    "circuit": "sanctions-non-membership-v1",
+    "list": "SAN01 demo-sanctions-v1 (public demonstration list)",
+    "setup": "demonstration ceremony",
+    "screened_parties": {
+      "source": [
+        "payeur"
+      ],
+      "arrival": [
+        "beneficiaire"
+      ]
+    },
+    "conduits": "source adapter, return receiver, composer",
+    "client_precheck": {
+      "source": "Continue",
+      "arrival": "Continue"
+    },
+    "verified_by": "each chain's Policy Wrapper, at its gated transfer"
+  },
+  "vlei": {
+    "warning": "pinned TEST root (not GLEIF), fictional LEIs prefixed DEMO",
+    "source_policy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+    "arrival_policy": "0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc",
+    "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+    "pinned_root": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+    "payer": {
+      "party": "fi-fr-agent-mandate",
+      "signed": true,
+      "lei": "DEMO00FIFRPAYER00119",
+      "expectedLei": "DEMO00FIFRPAYER00119",
+      "role": "MANDAT",
+      "roleTitle": "Head of Payments",
+      "credentialSaid": "EDvGx47oSGdb4iraXl88jPMqQmTF1MSTRlS7ZDzlKmAD",
+      "holderAid": "EBFA-pGiaseR-NEYTls8CMXlzKlSV9qP_tszgitB86_D",
+      "pinnedRoot": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+      "telStatus": "issued",
+      "checkedAt": "2026-10-22T01:05:08Z",
+      "presentation": {
+        "verdict": true,
+        "reasons": []
+      },
+      "binding": {
+        "verdict": true,
+        "reasons": [],
+        "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+        "validUntil": 1795221635
+      },
+      "reasons": [],
+      "mandate": {
+        "agentAid": "EBFA-pGiaseR-NEYTls8CMXlzKlSV9qP_tszgitB86_D",
+        "maxAmount": "250000.00",
+        "asset": "EURX",
+        "validUntil": "2026-11-21T00:21:45Z",
+        "purpose": "Cross-chain transfer EURX to SGDX, Programmable Compliance demo corridor",
+        "issuerAid": "EK_1LNMeKYloyNJMM3Xa6ogCOg-hgkwSZWRUp9lV8CjT",
+        "oorSaid": "EJGIztqZ-A0VL8yDqTVEp0VmUloZbA3AbiTlHq4p294g",
+        "intent": {
+          "authorized": true,
+          "reasons": [],
+          "requested": {
+            "amount": "1000.0",
+            "asset": "EURX",
+            "atTime": "2026-10-22T01:05:09Z"
+          }
+        }
+      },
+      "roleAttestation": 3,
+      "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+      "digest": "0x87a7b184db95cf0da8676d38ea270ce694ae8d18b4208999bcc7415447130b33",
+      "policy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+      "chainId": 11155111,
+      "verifiedAt": "2026-10-22T01:05:08.000Z",
+      "wallet": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+      "assetSymbol": "0x738DE4A03a18891e07Ff001323cA4d150d4B2C84",
+      "digests": {
+        "credentialSaid": "0x73c842b95424b57bced7a7f5936b2d610e5c0cea9564f829e02e09a0999b9c71",
+        "holderAid": "0x8d3d480ac29ecde4bd5c2209689324ac0649451ac0d343d09550452d07510b1f",
+        "rootAid": "0x91e842c42d075f74474f4d818c6204664c073141712a384ecc9555ea9472b686",
+        "mandateSaid": "0x37c7cd6f413b1f5c3fcfc4ac6a9806307a9247d98dab920aff87b717308d7e7f"
+      },
+      "maxAmount": "250000000000000000000000"
+    },
+    "beneficiary": {
+      "party": "fi-sg1-beneficiaire",
+      "signed": true,
+      "lei": "DEMO00FISG1BENEF0172",
+      "expectedLei": "DEMO00FISG1BENEF0172",
+      "role": "OOR",
+      "roleTitle": "Head of Treasury",
+      "credentialSaid": "EPhzt8xPU3QlD-4NUtoiGJVy-Miqlewlm7SZjsJ6W5Au",
+      "holderAid": "ENl8fdniYA73Q44Lix0_xF0_JSZ4PY8njBuJOo5ClL1I",
+      "pinnedRoot": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+      "telStatus": "issued",
+      "checkedAt": "2026-10-22T01:05:10Z",
+      "presentation": {
+        "verdict": true,
+        "reasons": []
+      },
+      "binding": {
+        "verdict": true,
+        "reasons": [],
+        "address": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+        "validUntil": 1795221635
+      },
+      "reasons": [],
+      "roleAttestation": 1,
+      "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+      "digest": "0x610036ba5767409d46f2d4fa2770af0cd367ca37292014084c985f9f33cde378",
+      "policy": "0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc",
+      "chainId": 421614,
+      "verifiedAt": "2026-10-22T01:05:10.000Z",
+      "wallet": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+      "assetSymbol": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+      "digests": {
+        "credentialSaid": "0x74b87caf76d034e292d840e7c05a689f8d8b40ca7b8ec1bc6b6a34fb62217f60",
+        "holderAid": "0xd20effb8db93fee4ebf89542244787f9e5f30403842b5bdaa2bdd42dcf554705",
+        "rootAid": "0x91e842c42d075f74474f4d818c6204664c073141712a384ecc9555ea9472b686",
+        "mandateSaid": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "maxAmount": "0"
+    },
+    "kyc_cp": {
+      "by_fi_sg1_on_fi_fr": {
+        "check": "FI SG1 node, before signing its arrival attestation : payer's vLEI presentation (OOR, or mandate and granter's OOR), wallet linkage, expected LEI",
+        "party": "fi-fr-agent-mandate",
+        "presented_lei": "DEMO00FIFRPAYER00119",
+        "expected_lei": "DEMO00FIFRPAYER00119",
+        "role": "MANDAT",
+        "roleTitle": "Head of Payments",
+        "verdict": true,
+        "reasons": [],
+        "telStatus": "issued",
+        "checkedAt": "2026-10-22T01:05:08Z"
+      },
+      "by_fi_fr_on_fi_sg1": {
+        "check": "FI FR, before sending : beneficiary's vLEI presentation, wallet linkage, expected LEI, then runFor of the arrival policy (Arbitrum)",
+        "party": "fi-sg1-beneficiaire",
+        "presented_lei": "DEMO00FISG1BENEF0172",
+        "expected_lei": "DEMO00FISG1BENEF0172",
+        "role": "OOR",
+        "roleTitle": "Head of Treasury",
+        "verdict": true,
+        "reasons": [],
+        "telStatus": "issued",
+        "checkedAt": "2026-10-22T01:05:10Z",
+        "runFor_arbitrum": "Continue"
+      }
+    },
+    "client_precheck": {
+      "kyc_cp": {
+        "source": "Continue",
+        "arrival": "Continue"
+      },
+      "real_contexts": {
+        "source": "Continue",
+        "arrival": "Continue"
+      }
+    },
+    "reliance": {
+      "source": [
+        {
+          "chain": "sepolia",
+          "tx": "0x1149a3221410399cbf806721480622f7c9f1ffbeef13ba9b17997688d1903593",
+          "block": 11966162,
+          "policy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+          "subject": "0x738DE4A03a18891e07Ff001323cA4d150d4B2C84",
+          "uetr": "0x3ef6f7e6d9ba4aa789cac95397bca99f",
+          "wallet": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+          "lei": "DEMO00FIFRPAYER00119",
+          "role": 3,
+          "credentialSaid": "0x73c842b95424b57bced7a7f5936b2d610e5c0cea9564f829e02e09a0999b9c71",
+          "holderAid": "0x8d3d480ac29ecde4bd5c2209689324ac0649451ac0d343d09550452d07510b1f",
+          "rootAid": "0x91e842c42d075f74474f4d818c6204664c073141712a384ecc9555ea9472b686",
+          "mandateSaid": "0x37c7cd6f413b1f5c3fcfc4ac6a9806307a9247d98dab920aff87b717308d7e7f",
+          "verifiedAt": "2026-10-22T01:05:08.000Z",
+          "verifier": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+          "matches_the_attester": true
+        }
+      ],
+      "arrival": [
+        {
+          "chain": "arbitrum-sepolia",
+          "tx": "0x26106aa502ab870c26fb1cb5375a89ab8bc77c76ccbb7fd14ba59ca363d8f770",
+          "block": 321566491,
+          "policy": "0x8fb6F7E53fdf3B9EFD707bc66a45869F99A5BfBc",
+          "subject": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+          "uetr": "0x3ef6f7e6d9ba4aa789cac95397bca99f",
+          "wallet": "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "lei": "DEMO00FISG1BENEF0172",
+          "role": 1,
+          "credentialSaid": "0x74b87caf76d034e292d840e7c05a689f8d8b40ca7b8ec1bc6b6a34fb62217f60",
+          "holderAid": "0xd20effb8db93fee4ebf89542244787f9e5f30403842b5bdaa2bdd42dcf554705",
+          "rootAid": "0x91e842c42d075f74474f4d818c6204664c073141712a384ecc9555ea9472b686",
+          "mandateSaid": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "verifiedAt": "2026-10-22T01:05:10.000Z",
+          "verifier": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+          "matches_the_attester": true
+        }
+      ]
+    },
+    "verified_by": "VleiAttestationPolicy, at the end of each chain's Policy Wrapper list, at its gated transfer"
+  },
+  "guid": "0xcda58387c02421fb943773c6566564c7d451b295bcb39c1bf4de77f039d01cca",
+  "uetr": "0x3ef6f7e6d9ba4aa789cac95397bca99f",
+  "issue": "delivered",
+  "arrival": {
+    "hash": "0x26106aa502ab870c26fb1cb5375a89ab8bc77c76ccbb7fd14ba59ca363d8f770",
+    "block": 321566491,
+    "status": 1,
+    "events": [
+      {
+        "address": "0x85711D76479fcB145Fa98de4322CA361b129BAe0",
+        "name": "Transfer",
+        "args": [
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "0x0000000000000000000000000000000000000000",
+          "1000000000000000000000"
+        ]
+      },
+      {
+        "address": "0x939731bADd5c55070f563CD0a5293e835586C91F",
+        "name": "Transfer",
+        "args": [
+          "0x85711D76479fcB145Fa98de4322CA361b129BAe0",
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "1000000000000000000000"
+        ]
+      },
+      {
+        "address": "0x85711D76479fcB145Fa98de4322CA361b129BAe0",
+        "name": "TokenUnwrap",
+        "args": [
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "1000000000000000000000",
+          "0x939731bADd5c55070f563CD0a5293e835586C91F"
+        ]
+      },
+      {
+        "address": "0x48660bD73791264D1cED1b3451e313a85d58c15b",
+        "name": "Transfer",
+        "args": [
+          "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "1468128206282243288410"
+        ]
+      },
+      {
+        "address": "0x939731bADd5c55070f563CD0a5293e835586C91F",
+        "name": "Transfer",
+        "args": [
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
+          "1000000000000000000000"
+        ]
+      },
+      {
+        "address": "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD",
+        "name": "Swap",
+        "args": [
+          "0x101F443B4d1b059569D643917553c771E1b9663E",
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "-1468128206282243288410",
+          "1000000000000000000000",
+          "65387044445828735714192391843",
+          "16619407393431555265954590",
+          "-3841"
+        ]
+      },
+      {
+        "address": "0x48660bD73791264D1cED1b3451e313a85d58c15b",
+        "name": "Transfer",
+        "args": [
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+          "1468128206282243288410"
+        ]
+      },
+      {
+        "address": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+        "name": "Transfer",
+        "args": [
+          "0x0000000000000000000000000000000000000000",
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "1468128206282243288410"
+        ]
+      },
+      {
+        "address": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+        "name": "TokenWrap",
+        "args": [
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "1468128206282243288410",
+          "0x48660bD73791264D1cED1b3451e313a85d58c15b"
+        ]
+      },
+      {
+        "address": "0xd8b0f8795141a0B2736BeF452726A39d55638f40",
+        "name": "Transfer",
+        "args": [
+          "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+          "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "1468128206282243288410"
+        ]
+      },
+      {
+        "address": "0x36145Dd3E3b8f5dFa4b4044B1d80Ee5c5b9f356a",
+        "name": "Delivered",
+        "args": [
+          "0xcda58387c02421fb943773c6566564c7d451b295bcb39c1bf4de77f039d01cca",
+          "0xadEe31407e2AdcA6B0f25Bd039DCe047B80AfAde",
+          "1000000000000000000000",
+          "1468128206282243288410"
+        ]
+      }
+    ]
+  },
+  "delivered_wSGDX": "1468.12820628224328841",
+  "measured_applied_rate": 1.4681282062822432,
+  "measured_gap_to_reference_bps": -12.43,
+  "balances_after": {
+    "time": "2026-10-22T01:08:37.711Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "1000.0",
+    "adapter_lock_EURX": "10500.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "77038.214290424923358889",
+    "pool_SGDX": "87749.557516160172948053",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "17480.393122399694529332",
+    "composer_wEURX": "0.0"
+  },
+  "measured_at": "2026-10-22T01:08:38.589Z"
+}

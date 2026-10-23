@@ -1,0 +1,98 @@
+{
+  "schema": 3,
+  "pass": "refusal-vlei-revoked-oor",
+  "amount_eur": "1000.0",
+  "uetr": "0x40a7343c8537a165e183961e907441d2",
+  "submitted_transaction": false,
+  "vlei": {
+    "warning": "pinned TEST root (not GLEIF), fictional LEIs prefixed DEMO",
+    "source_policy": "0x7F2f0E02eE528B991fF527ceACBFef767BEbb237",
+    "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+    "payer_revoked_oor": {
+      "party": "fi-fr-ancien-revoque",
+      "signed": false,
+      "lei": "DEMO00FIFRPAYER00119",
+      "expectedLei": "DEMO00FIFRPAYER00119",
+      "role": "OOR",
+      "roleTitle": "Head of Operations",
+      "credentialSaid": "EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB",
+      "holderAid": "EHCLQvpK1EXD6nuiPFHgiO-_5rzdyfVggbmwTKLg9g3k",
+      "pinnedRoot": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+      "telStatus": "revoked",
+      "checkedAt": "2026-10-22T00:57:18Z",
+      "presentation": {
+        "verdict": false,
+        "reasons": [
+          "EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR) : revoked"
+        ]
+      },
+      "binding": {
+        "verdict": false,
+        "reasons": [
+          "holder signature KERI: EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR) : revoked"
+        ],
+        "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+        "validUntil": 1795221635
+      },
+      "reasons": [
+        "presentation : EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR) : revoked",
+        "wallet attachment: holder signature KERI: EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR) : revoked"
+      ]
+    },
+    "kyc_cp": {
+      "by_fi_sg1_on_fi_fr": {
+        "check": "FI SG1 node, before signing its arrival attestation : payer's vLEI presentation (OOR, or mandate and granter's OOR), wallet linkage, expected LEI",
+        "party": "fi-fr-ancien-revoque",
+        "presented_lei": "DEMO00FIFRPAYER00119",
+        "expected_lei": "DEMO00FIFRPAYER00119",
+        "role": "OOR",
+        "roleTitle": "Head of Operations",
+        "verdict": false,
+        "reasons": [
+          "presentation : EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR) : revoked",
+          "wallet attachment: holder signature KERI: EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR) : revoked"
+        ],
+        "telStatus": "revoked",
+        "checkedAt": "2026-10-22T00:57:18Z"
+      }
+    },
+    "precheck_without_proof": {
+      "source": "PolicyRejected(VleiAttestationPolicy: no vLEI attestation supplied)"
+    },
+    "holder_in_office_control": {
+      "party": "fi-fr-payeur",
+      "signed": true,
+      "telStatus": "issued",
+      "runFor_source": "Continue"
+    }
+  },
+  "balances_before": {
+    "time": "2026-10-22T00:57:17.170Z",
+    "payer_wEURX": "1000.0",
+    "payer_EURX": "2500.0",
+    "adapter_lock_EURX": "8500.0",
+    "supply_wEURX_source": "1000.0",
+    "arrival_reserve_EURX": "3000.0",
+    "pool_EURX": "75038.214290424923358889",
+    "pool_SGDX": "90686.028013712295529784",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "14543.922624847571947601",
+    "composer_wEURX": "0.0"
+  },
+  "balances_after": {
+    "time": "2026-10-22T00:57:21.119Z",
+    "payer_wEURX": "1000.0",
+    "payer_EURX": "2500.0",
+    "adapter_lock_EURX": "8500.0",
+    "supply_wEURX_source": "1000.0",
+    "arrival_reserve_EURX": "3000.0",
+    "pool_EURX": "75038.214290424923358889",
+    "pool_SGDX": "90686.028013712295529784",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "14543.922624847571947601",
+    "composer_wEURX": "0.0"
+  },
+  "no_funds_moved": true,
+  "expected_result": true,
+  "measured_at": "2026-10-22T00:57:22.006Z"
+}

@@ -1,0 +1,273 @@
+{
+ "contractName": "RequiredChecksPolicy",
+ "abi": [
+  {
+   "type": "constructor",
+   "inputs": [
+    {
+     "name": "engine",
+     "type": "address",
+     "internalType": "address"
+    },
+    {
+     "name": "initialOwner",
+     "type": "address",
+     "internalType": "address"
+    }
+   ],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "function",
+   "name": "onInstall",
+   "inputs": [
+    {
+     "name": "",
+     "type": "bytes4",
+     "internalType": "bytes4"
+    }
+   ],
+   "outputs": [],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "onUninstall",
+   "inputs": [
+    {
+     "name": "",
+     "type": "bytes4",
+     "internalType": "bytes4"
+    }
+   ],
+   "outputs": [],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "owner",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "address"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "policyEngine",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "address"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "postRun",
+   "inputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "address"
+    },
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "address"
+    },
+    {
+     "name": "",
+     "type": "bytes4",
+     "internalType": "bytes4"
+    },
+    {
+     "name": "",
+     "type": "bytes[]",
+     "internalType": "bytes[]"
+    },
+    {
+     "name": "",
+     "type": "bytes",
+     "internalType": "bytes"
+    }
+   ],
+   "outputs": [],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "function",
+   "name": "requiredChecks",
+   "inputs": [
+    {
+     "name": "target",
+     "type": "address",
+     "internalType": "address"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "string[]",
+     "internalType": "string[]"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "run",
+   "inputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "address"
+    },
+    {
+     "name": "subject",
+     "type": "address",
+     "internalType": "address"
+    },
+    {
+     "name": "",
+     "type": "bytes4",
+     "internalType": "bytes4"
+    },
+    {
+     "name": "",
+     "type": "bytes[]",
+     "internalType": "bytes[]"
+    },
+    {
+     "name": "context",
+     "type": "bytes",
+     "internalType": "bytes"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "uint8",
+     "internalType": "enum RequiredChecksPolicy.PolicyResult"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "setRequiredChecks",
+   "inputs": [
+    {
+     "name": "target",
+     "type": "address",
+     "internalType": "address"
+    },
+    {
+     "name": "codes",
+     "type": "string[]",
+     "internalType": "string[]"
+    }
+   ],
+   "outputs": [],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "function",
+   "name": "supportsInterface",
+   "inputs": [
+    {
+     "name": "interfaceId",
+     "type": "bytes4",
+     "internalType": "bytes4"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bool",
+     "internalType": "bool"
+    }
+   ],
+   "stateMutability": "pure"
+  },
+  {
+   "type": "function",
+   "name": "transferOwnership",
+   "inputs": [
+    {
+     "name": "to",
+     "type": "address",
+     "internalType": "address"
+    }
+   ],
+   "outputs": [],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "event",
+   "name": "OwnerTransferred",
+   "inputs": [
+    {
+     "name": "from",
+     "type": "address",
+     "indexed": true,
+     "internalType": "address"
+    },
+    {
+     "name": "to",
+     "type": "address",
+     "indexed": true,
+     "internalType": "address"
+    }
+   ],
+   "anonymous": false
+  },
+  {
+   "type": "event",
+   "name": "RequiredChecksSet",
+   "inputs": [
+    {
+     "name": "target",
+     "type": "address",
+     "indexed": true,
+     "internalType": "address"
+    },
+    {
+     "name": "codes",
+     "type": "string[]",
+     "indexed": false,
+     "internalType": "string[]"
+    }
+   ],
+   "anonymous": false
+  },
+  {
+   "type": "error",
+   "name": "NotOwner",
+   "inputs": []
+  },
+  {
+   "type": "error",
+   "name": "PolicyRejected",
+   "inputs": [
+    {
+     "name": "reason",
+     "type": "string",
+     "internalType": "string"
+    }
+   ]
+  },
+  {
+   "type": "error",
+   "name": "Unauthorized",
+   "inputs": []
+  }
+ ]
+}

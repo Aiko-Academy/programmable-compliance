@@ -133,6 +133,21 @@
             "name": "rootAid",
             "type": "bytes32",
             "internalType": "bytes32"
+          },
+          {
+            "name": "termsHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "allocation",
+            "type": "uint8",
+            "internalType": "uint8"
+          },
+          {
+            "name": "disputeRef",
+            "type": "bytes32",
+            "internalType": "bytes32"
           }
         ]
       }
@@ -226,6 +241,26 @@
             "name": "verifiedAt",
             "type": "uint64",
             "internalType": "uint64"
+          },
+          {
+            "name": "termsHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "allocation",
+            "type": "uint8",
+            "internalType": "uint8"
+          },
+          {
+            "name": "disputeRef",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "sourceRef",
+            "type": "bytes32",
+            "internalType": "bytes32"
           }
         ]
       }
@@ -522,6 +557,21 @@
         "name": "rootAid",
         "type": "bytes32",
         "internalType": "bytes32"
+      },
+      {
+        "name": "termsHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "allocation",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "disputeRef",
+        "type": "bytes32",
+        "internalType": "bytes32"
       }
     ],
     "outputs": [],
@@ -618,6 +668,26 @@
                 "name": "verifiedAt",
                 "type": "uint64",
                 "internalType": "uint64"
+              },
+              {
+                "name": "termsHash",
+                "type": "bytes32",
+                "internalType": "bytes32"
+              },
+              {
+                "name": "allocation",
+                "type": "uint8",
+                "internalType": "uint8"
+              },
+              {
+                "name": "disputeRef",
+                "type": "bytes32",
+                "internalType": "bytes32"
+              },
+              {
+                "name": "sourceRef",
+                "type": "bytes32",
+                "internalType": "bytes32"
               }
             ]
           },
@@ -720,6 +790,21 @@
             "name": "rootAid",
             "type": "bytes32",
             "internalType": "bytes32"
+          },
+          {
+            "name": "termsHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "allocation",
+            "type": "uint8",
+            "internalType": "uint8"
+          },
+          {
+            "name": "disputeRef",
+            "type": "bytes32",
+            "internalType": "bytes32"
           }
         ]
       }
@@ -808,6 +893,34 @@
         "type": "uint64",
         "indexed": false,
         "internalType": "uint64"
+      },
+      {
+        "name": "terms",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct VleiAttestationPolicy.RelianceTerms",
+        "components": [
+          {
+            "name": "termsHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "allocation",
+            "type": "uint8",
+            "internalType": "uint8"
+          },
+          {
+            "name": "disputeRef",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "sourceRef",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          }
+        ]
       },
       {
         "name": "verifier",

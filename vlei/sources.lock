@@ -1,0 +1,9 @@
+# Sources tirees par `ecosysteme.sh installer`, epinglees (format : nom url reference commit).
+# Les paquets Python sont epingles a part, avec empreintes, dans requirements.lock.
+vLEI          https://github.com/WebOfTrust/vLEI.git            1.0.5    6e1a33ddbf1537d1c7e12dc0dae409c2a58ffafa
+keripy        https://github.com/WebOfTrust/keripy.git          1.2.14   bab95c16e949b61398129a3e41a8f68bad84c94f
+vlei-verifier https://github.com/GLEIF-IT/vlei-verifier.git     1.0.0    e9d175b988aef0c7ab7cc96f18247589c0959e01
+# libsodium compilee localement (prefixe .deps/libsodium), archive authentifiee par sha256 et minisign.
+libsodium     https://github.com/jedisct1/libsodium/releases/download/1.0.20-RELEASE/libsodium-1.0.20.tar.gz  1.0.20  sha256:ebb65ef6ca439333c2bb41a0c1990587288da07f6c7fd07cb3a18cc18d30ce19
+# Cle publique minisign de libsodium (documentation officielle de libsodium, rubrique installation).
+libsodium-minisign-cle  RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3

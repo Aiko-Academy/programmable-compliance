@@ -1,0 +1,55 @@
+{
+  "previous_generation": "PREVIOUS GENERATION (2026-10-16, 50 EURX, older contracts) : do not use as a result of the current corridor ; see live-result.json and the other 1000 EURX files",
+  "mode": "live",
+  "pass": "route 1 (USD pivot), forced by --force-route 1 to play the pivot the market does not choose in the calibrated state",
+  "mesure": "2026-10-16 19:56 to 19:59 UTC",
+  "decision_agent": {
+    "at": "2026-10-16T19:55:49.805Z",
+    "amountIn": "50000000000000000000",
+    "route": 1,
+    "forced": true,
+    "convertAmount": "73482562504227286022",
+    "minOut": "73262114816714604164",
+    "tolBps": 30,
+    "reason": "FORCED (route 1) ; the rule would have taken route 0 : route 1 returns 73.482562504227286022 SGDX against 73.487979888076206395 for route 0 (gap -0.74 bps)",
+    "quotes": [
+      {
+        "route": 0,
+        "out": "73487979888076206395",
+        "gas": 73686,
+        "erreur": null
+      },
+      {
+        "route": 1,
+        "out": "73482562504227286022",
+        "gas": 182719,
+        "erreur": null
+      }
+    ]
+  },
+  "legs": [
+    {
+      "chainId": 11155111,
+      "tx": "0xa5e3e633ad3b8e9e09faa546051894f8e1912906c5efce019e0393fcd99daa63",
+      "phase": "lock"
+    },
+    {
+      "chainId": 421614,
+      "tx": "0xa50443a423e95a01faaddc5e98e8d71e9cff79975f4cd541e680ef1e4b8eb682",
+      "phase": "swap-pivot-et-deliver"
+    }
+  ],
+  "composer": "0xd10E2bE83F8dAEb25d568E8f850Ec95222DE5511",
+  "pools": {
+    "EURX/USDX": "0x179F7c1d4B351303f487A86340B0911ACd41A0c3",
+    "SGDX/USDX": "0x3D7C07FA75E7FdD5d9b019Ad45102e0f11B5D9d9",
+    "direct": "0x224a6c394d6B5307964E18E6A43Bb3b7984fe9AD"
+  },
+  "deltas": {
+    "beneficiary BANK SG1 wSGDX": "+73.482562504227286022 (equal to the quote of route 1)",
+    "pool EURX/USDX": "+50 EURX, -57.997394026043751633 USDX",
+    "pool SGDX/USDX": "+57.997394026043751633 USDX, -73.482562504227286022 SGDX",
+    "pool direct": "0 (unchanged)",
+    "composer USDX": "0"
+  }
+}

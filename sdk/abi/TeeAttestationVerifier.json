@@ -1,0 +1,142 @@
+{
+ "contractName": "TeeAttestationVerifier",
+ "abi": [
+  {
+   "type": "constructor",
+   "inputs": [
+    {
+     "name": "sigVerifier_",
+     "type": "address",
+     "internalType": "contract InstitutionSignatureVerifier"
+    },
+    {
+     "name": "teeTrust_",
+     "type": "address",
+     "internalType": "contract TeeTrustRegistry"
+    }
+   ],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "function",
+   "name": "sigVerifier",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "contract InstitutionSignatureVerifier"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "teeKeyHash",
+   "inputs": [
+    {
+     "name": "qx",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "qy",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "stateMutability": "pure"
+  },
+  {
+   "type": "function",
+   "name": "teeTrust",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "contract TeeTrustRegistry"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "verify",
+   "inputs": [
+    {
+     "name": "s",
+     "type": "tuple",
+     "internalType": "struct InstitutionSignatureVerifier.Sig",
+     "components": [
+      {
+       "name": "uetr",
+       "type": "bytes16",
+       "internalType": "bytes16"
+      },
+      {
+       "name": "checkCode",
+       "type": "string",
+       "internalType": "string"
+      },
+      {
+       "name": "verdict",
+       "type": "bool",
+       "internalType": "bool"
+      },
+      {
+       "name": "canonicalDataHash",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "policyRef",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "timestamp",
+       "type": "uint256",
+       "internalType": "uint256"
+      }
+     ]
+    },
+    {
+     "name": "r",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "sigS",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "qx",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "qy",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bool",
+     "internalType": "bool"
+    }
+   ],
+   "stateMutability": "view"
+  }
+ ]
+}

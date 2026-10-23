@@ -1,0 +1,79 @@
+{
+  "schema": 2,
+  "pass": "return-residual",
+  "amount_eur": "1000.0",
+  "balances_before": {
+    "time": "2026-10-20T09:37:24.896Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "6000.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "74038.214290424923358889",
+    "pool_SGDX": "92154.584436800588607297",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "10872.454644190342346756",
+    "composer_wEURX": "0.0"
+  },
+  "legs": [
+    {
+      "leg": "key-revocation-at-arrival",
+      "chain": "arbitrum-sepolia",
+      "tx": "0xad494c8001f4ef2129f64e17aeff3027845927c4f70b6621237ab6fe35ab6666",
+      "status": "ok",
+      "note": "the node key is revoked at the arrival seal AFTER signing the attestation, before delivery : the residual case (key-revocation propagation window)"
+    },
+    {
+      "leg": "lock",
+      "chain": "sepolia",
+      "tx": "0x2c511fa25a0bf16daa1313ed13698fda24f11509375f3fcf83ea975d8c1ea549",
+      "status": "ok",
+      "lock_after": "7000.0"
+    },
+    {
+      "leg": "refused",
+      "chain": "arbitrum-sepolia",
+      "tx": "0x5c0e44f7dcf94565a665988cd3923c2052d38c6cb6466127a8ecc66a73d81d8f",
+      "status": "refused",
+      "reason": "PolicyRunRejected(0xa9059cbb, 0x73f7587bed5c0988dBA9513e61CACa2016edD98e, AttestationValidatorPolicy: attestation of check customer-due-diligence is not authentic)",
+      "wEURX_in_transit_at_the_composer": "1000.0"
+    },
+    {
+      "leg": "key-restoration",
+      "chain": "arbitrum-sepolia",
+      "tx": "0x5b8abd252c4204267887bbbd71a392c547251dfa17d7e6223bf7e546073d442b",
+      "status": "ok"
+    },
+    {
+      "leg": "return-start",
+      "chain": "arbitrum-sepolia",
+      "tx": "0xd16e4de86e48f95775673a818f4d2e92beb4f8803819f05aae695bcb3c3cc2cc",
+      "status": "ok",
+      "layerzero_fees": "0.000103699487578868"
+    },
+    {
+      "leg": "return-delivered",
+      "chain": "sepolia",
+      "tx": "0xca0b41dac9d4a84a2b11973c90906d511b124d09b0a412b3864a904def260452",
+      "block": 11954471,
+      "status": "ok",
+      "payer_wEURX_after": "2000.0",
+      "lock_after": "6000.0"
+    }
+  ],
+  "guid": "0xfb5e896570f731312d7d5a35e59c4a3a5350d163c13f2b06d98fb1811e2b2a18",
+  "balances_after": {
+    "time": "2026-10-20T09:43:03.053Z",
+    "payer_wEURX": "2000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "6000.0",
+    "supply_wEURX_source": "2000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "74038.214290424923358889",
+    "pool_SGDX": "92154.584436800588607297",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "10872.454644190342346756",
+    "composer_wEURX": "0.0"
+  },
+  "measured_at": "2026-10-20T09:43:03.967Z"
+}

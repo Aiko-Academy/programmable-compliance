@@ -8,7 +8,6 @@ import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const RACINE = process.cwd();
-const SOURCE_COMMIT = process.env.SOURCE_COMMIT || '';
 const ECRIT_LE = new Date().toISOString().slice(0, 10);
 
 // Les deux verificateurs ZK sont auto-generes depuis les circuits (snarkjs), redistribues en GPL-3.0 ;
@@ -41,12 +40,11 @@ for (const f of lister('deployments')) {
 
 const manifest = {
   source: 'Aiko Academy, Programmable Compliance toolkit',
-  source_commit: SOURCE_COMMIT,
   ecrit_le: ECRIT_LE,
-  note: 'Surface d exposition redistribuable. Principe : ABI et interfaces reproductibles depuis la source par empreinte ; traceurs lus sur la chaine ; licences AGPL-3.0, GPL-3.0 ou MIT seulement ; aucun artefact BUSL, LZBL ni UNLICENSED ; aucune trace d outil. ABI verifiees contre le bytecode deploye par le RUNBOOK (etape en ligne, RPC).',
+  note: 'Redistributable exposure surface. Contract ABIs are re-exportable from the published sources and matched by fingerprint; the five cross-chain corridor ABIs without source here are checked against the on-chain bytecode; trackers are read from the chain; AGPL-3.0, GPL-3.0 or MIT licences only; no BUSL, LZBL or UNLICENSED artefact; no tool trace. ABIs are verified against the deployed bytecode by the RUNBOOK (online step, RPC).',
   licences_autorisees: ['AGPL-3.0', 'GPL-3.0', 'MIT', 'data'],
   fichiers,
 };
 
 writeFileSync(join(RACINE, 'MANIFEST.json'), JSON.stringify(manifest, null, 2) + '\n');
-console.log(`MANIFEST.json ecrit : ${Object.keys(fichiers).length} fichiers, commit=${SOURCE_COMMIT || '(non pose)'}`);
+console.log(`MANIFEST.json ecrit : ${Object.keys(fichiers).length} fichiers`);

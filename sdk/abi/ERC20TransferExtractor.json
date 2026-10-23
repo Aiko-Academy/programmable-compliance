@@ -1,0 +1,108 @@
+{
+ "contractName": "ERC20TransferExtractor",
+ "abi": [
+  {
+   "type": "function",
+   "name": "PARAM_AMOUNT",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "PARAM_FROM",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "PARAM_TO",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "extract",
+   "inputs": [
+    {
+     "name": "payload",
+     "type": "tuple",
+     "internalType": "struct IPolicyManager.Payload",
+     "components": [
+      {
+       "name": "selector",
+       "type": "bytes4",
+       "internalType": "bytes4"
+      },
+      {
+       "name": "sender",
+       "type": "address",
+       "internalType": "address"
+      },
+      {
+       "name": "data",
+       "type": "bytes",
+       "internalType": "bytes"
+      },
+      {
+       "name": "context",
+       "type": "bytes",
+       "internalType": "bytes"
+      }
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "type": "tuple[]",
+     "internalType": "struct IPolicyManager.Parameter[]",
+     "components": [
+      {
+       "name": "name",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "value",
+       "type": "bytes",
+       "internalType": "bytes"
+      }
+     ]
+    }
+   ],
+   "stateMutability": "pure"
+  },
+  {
+   "type": "error",
+   "name": "UnsupportedSelector",
+   "inputs": [
+    {
+     "name": "selector",
+     "type": "bytes4",
+     "internalType": "bytes4"
+    }
+   ]
+  }
+ ]
+}

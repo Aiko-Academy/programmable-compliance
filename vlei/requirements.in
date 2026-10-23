@@ -1,0 +1,3 @@
+# Dependances directes de l'ecosysteme vLEI de test (versions exactes resolues dans requirements.lock).
+keri==1.2.14
+pytest==9.0.2

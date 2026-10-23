@@ -1,0 +1,196 @@
+{
+ "contractName": "TeeTrustRegistry",
+ "abi": [
+  {
+   "type": "constructor",
+   "inputs": [
+    {
+     "name": "registry_",
+     "type": "address",
+     "internalType": "contract ComplianceKeyRegistry"
+    },
+    {
+     "name": "minQuorum_",
+     "type": "uint256",
+     "internalType": "uint256"
+    },
+    {
+     "name": "domainOverride",
+     "type": "address",
+     "internalType": "address"
+    }
+   ],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "function",
+   "name": "digest",
+   "inputs": [
+    {
+     "name": "teeKeyHash",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "reportHash",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "timestamp",
+     "type": "uint256",
+     "internalType": "uint256"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "isTrusted",
+   "inputs": [
+    {
+     "name": "",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "",
+     "type": "bool",
+     "internalType": "bool"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "minQuorum",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "uint256",
+     "internalType": "uint256"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "registry",
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "",
+     "type": "address",
+     "internalType": "contract ComplianceKeyRegistry"
+    }
+   ],
+   "stateMutability": "view"
+  },
+  {
+   "type": "function",
+   "name": "submitQuorum",
+   "inputs": [
+    {
+     "name": "teeKeyHash",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "reportHash",
+     "type": "bytes32",
+     "internalType": "bytes32"
+    },
+    {
+     "name": "timestamp",
+     "type": "uint256",
+     "internalType": "uint256"
+    },
+    {
+     "name": "endorsements",
+     "type": "tuple[]",
+     "internalType": "struct TeeTrustRegistry.Endorsement[]",
+     "components": [
+      {
+       "name": "orgId",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "r",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "s",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "qx",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      },
+      {
+       "name": "qy",
+       "type": "bytes32",
+       "internalType": "bytes32"
+      }
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "name": "valid",
+     "type": "uint256",
+     "internalType": "uint256"
+    }
+   ],
+   "stateMutability": "nonpayable"
+  },
+  {
+   "type": "event",
+   "name": "TeeKeyTrusted",
+   "inputs": [
+    {
+     "name": "teeKeyHash",
+     "type": "bytes32",
+     "indexed": true,
+     "internalType": "bytes32"
+    },
+    {
+     "name": "quorum",
+     "type": "uint256",
+     "indexed": false,
+     "internalType": "uint256"
+    }
+   ],
+   "anonymous": false
+  },
+  {
+   "type": "error",
+   "name": "QuorumNotMet",
+   "inputs": [
+    {
+     "name": "valid",
+     "type": "uint256",
+     "internalType": "uint256"
+    },
+    {
+     "name": "required",
+     "type": "uint256",
+     "internalType": "uint256"
+    }
+   ]
+  }
+ ]
+}
