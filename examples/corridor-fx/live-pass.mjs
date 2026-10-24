@@ -41,7 +41,7 @@ import {
 } from 'ethers';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, existsSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { fournisseur, avecEssais, envoyer } from './txutil.mjs';
 import { attester as attesterVlei, PROOF_ABI, POLICY_ABI as VLEI_ABI, partie as partieVlei, cleLei } from '../../vlei/attester/attester.mjs';
 
@@ -256,7 +256,7 @@ function param(c, composeMsg, montant, oftCmd = '0x') {
 // the rail therefore has only one screenable party on the source wrapper side (the payer), and the arrival leg has only one (the
 // beneficiary). The proofs are kind 2 items, code `sanctions-zkp-public`, in the SAME array as the attestation.
 const ZK_DIR = join(toolkit, 'zk', 'sanctions');
-const PROUVEUR = '/private/tmp/prove-sanctions-corridor';
+const PROUVEUR = join(tmpdir(), 'prove-sanctions-corridor');
 const ZK_CODE = 'sanctions-zkp-public';
 function construireProuveur() {
   mkdirSync(dirname(PROUVEUR), { recursive: true });
@@ -268,7 +268,7 @@ function prouverPartie(c, { wrapper, chainid, uetr, from, to, id, party: partie,
   construireProuveur();
   const pk = process.env.SANCTIONS_PK || join(homedir(), '.aiko-ceremonies', 'sanctions-v1', 'pk', 'pk.bin');
   if (!existsSync(pk)) throw new Error('proof key not found (SANCTIONS_PK or ~/.aiko-ceremonies/sanctions-v1/pk/pk.bin)');
-  const sortie = join('/private/tmp', `preuve-${partie}-${Date.now()}.json`);
+  const sortie = join(tmpdir(), `preuve-${partie}-${Date.now()}.json`);
   const montantArgs = min !== undefined ? ['--min', String(min), '--max', String(max)] : ['--amount', String(montant)];
   const r = spawnSync(PROUVEUR, ['prove', '--snapshot', 'lists/demo-sanctions-v1.json', '--wrapper', wrapper, '--uetr', uetr,
     '--payer', from, '--beneficiary', to, ...montantArgs, '--chainid', String(chainid),
