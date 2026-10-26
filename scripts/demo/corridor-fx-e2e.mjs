@@ -187,9 +187,10 @@ const at = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), tr
 // Default endpoints, tried in order when no --rpc-* flag is given. Public endpoints differ: some prune old receipts
 // (a missing receipt reads as a failed check), some refuse log ranges over 10,000 blocks. An endpoint is kept only if
 // it answers the right chain id AND serves the receipt of the most recent transaction of the tracker on that chain.
-// A flag always wins and is never replaced.
+// A flag always wins and is never replaced. Measured on 2026-10-26: neither drpc (no eth_getTransactionReceipt) nor
+// publicnode (null for the receipts of 2026-10-18) served the corridor's source receipts any more; Tenderly did.
 const RPC_CANDIDATES = {
-  11155111: ['https://sepolia.drpc.org', 'https://ethereum-sepolia-rpc.publicnode.com'],
+  11155111: ['https://sepolia.gateway.tenderly.co', 'https://sepolia.drpc.org', 'https://ethereum-sepolia-rpc.publicnode.com'],
   421614: ['https://arbitrum-sepolia.gateway.tenderly.co', 'https://sepolia-rollup.arbitrum.io/rpc'],
 };
 function lastTxOn(chainId) {
@@ -440,12 +441,21 @@ async function vleiChecks(l, p, rcpt, block, sideKey, ctx) {
     `${all.length} VleiReliedUpon in the receipt (${mine.length} from the vLEI policy of this chain), expected exactly one${named ? '' : '; counterparty_check.' + sideKey + '.relied_upon does not name this transaction and policy'}`));
   if (mine.length !== 1) return out;
   const g = mine[0], d = g.data;
+  // Version 1 of the event carries 8 data words, version 2 carries 12: the reliance terms (termsHash, allocation,
+  // disputeRef, sourceRef) sit between verifiedAt and the verifier. The verifier is therefore read from the LAST word,
+  // which holds for both versions; reading word 7 under version 2 returned the end of termsHash.
+  const words = (d.length - 2) / 64;
   const e = {
     subject: topicAddr(g.topics[1]), uetr: g.topics[2].slice(0, 34), wallet: topicAddr(g.topics[3]),
     lei: Buffer.from(d.slice(2, 42), 'hex').toString('latin1'), role: Number(wordAt(d, 1)),
     root: '0x' + d.slice(2 + 4 * 64, 2 + 5 * 64), mandate: wordAt(d, 5), verifiedAt: Number(wordAt(d, 6)),
-    verifier: '0x' + d.slice(2 + 7 * 64 + 24, 2 + 8 * 64),
+    verifier: '0x' + d.slice(d.length - 40),
+    terms: words === 12 ? { termsHash: '0x' + d.slice(2 + 7 * 64, 2 + 8 * 64), allocation: Number(wordAt(d, 8)), disputeRef: '0x' + d.slice(2 + 9 * 64, 2 + 10 * 64) } : null,
   };
+  const pinnedTerms = VLEI.reliance_terms;
+  if (e.terms && pinnedTerms) out.push(verdict(lc(e.terms.termsHash) === lc(pinnedTerms.termsHash) && e.terms.allocation === pinnedTerms.allocation && lc(e.terms.disputeRef) === lc(pinnedTerms.disputeRef),
+    `relied upon under the reliance terms the tracker pins (termsHash ${short(pinnedTerms.termsHash)}, allocation ${pinnedTerms.allocation})`,
+    `the event carries termsHash ${e.terms.termsHash}, allocation ${e.terms.allocation}, disputeRef ${e.terms.disputeRef}; generation.vlei.reliance_terms differs`));
   out.push(verdict(lc(e.subject) === lc(wrapper) && lc(e.wallet) === lc(rec.wallet) && lc(rec.wallet) === lc(party),
     `relied upon for wallet ${short(e.wallet)}, the ${sideKey === 'payer' ? 'originating' : 'beneficiary'} FI as recorded, on the ${src ? 'source wEURX' : 'delivery wSGDX'} wrapper`,
     `VleiReliedUpon names wrapper ${e.subject} and wallet ${e.wallet}; the pass records wallet ${rec.wallet} for the party ${party}`));

@@ -120,8 +120,10 @@ relying party in `configOf`, and `sourceRef` is the digest of the source the ver
 the chain). An empty result with no error
 means that no transfer has relied on the policy yet: the same read on `VerifierSet(address indexed verifier,bool active)`
 must return the registration of the verifier at the creation block, which proves the read itself works. Version 1 of the policy (removed from both selectors on 2026-10-23, see `generation.vlei.replaces`) was in service from
-2026-10-22; the recorded results dated before 2026-10-23 cite it. Two conforming passes relied on it on both chains (`demonstration_passes.conforming_vlei` and
-`conforming_vlei_agent_mandate`), and `scripts/demo/corridor-fx-e2e.mjs` reads their events (next section).
+2026-10-22; the recorded results dated before 2026-10-23 cite it. The two conforming passes that relied on version 1 are
+kept under `history.demonstration_passes` (`conforming_vlei_policy_v1`, `conforming_vlei_agent_mandate_policy_v1`); the
+passes `demonstration_passes.conforming_vlei` and `conforming_vlei_agent_mandate`, played again on 2026-10-26, relied on
+version 2 on both chains, and `scripts/demo/corridor-fx-e2e.mjs` reads their events, reliance terms included (next section).
 
 ### Replaying the FX corridor from the surface
 
@@ -150,8 +152,9 @@ Wrapper) carries its demonstration passes in `deployments/fx-corridor.json`, und
   the call at the block before, and balances equal before and after;
 - `returned`: the residual case where the node key is revoked after signing, the arrival refuses, and the value goes
   back to the payer;
-- `conforming_vlei`, `conforming_vlei_agent_mandate`: the two conforming passes of 2026-10-22 with the vLEI
-  counterparty check, an officer (OOR) on each side, then an agent of FI FR under a mandate (role 3) on the payer side.
+- `conforming_vlei`, `conforming_vlei_agent_mandate`: the two conforming passes of 2026-10-26 with the vLEI
+  counterparty check under version 2 of the policy, an officer (OOR) on each side, then an agent of FI FR under a
+  mandate (role 3) on the payer side.
   Each carries a `counterparty_check`: for each side, the LEI presented and the LEI expected, the role, the time of the
   off-chain verification and the transaction where the policy relied on it (`VleiReliedUpon`). Test root, not GLEIF;
   fictitious LEIs;

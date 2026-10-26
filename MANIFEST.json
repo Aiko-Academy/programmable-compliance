@@ -1,6 +1,6 @@
 {
   "source": "Aiko Academy, Programmable Compliance toolkit",
-  "ecrit_le": "2026-10-23",
+  "ecrit_le": "2026-10-26",
   "note": "Redistributable exposure surface. Contract ABIs are re-exportable from the published sources and matched by fingerprint; the five cross-chain corridor ABIs without source here are checked against the on-chain bytecode; trackers are read from the chain; AGPL-3.0, GPL-3.0 or MIT licences only; no BUSL, LZBL or UNLICENSED artefact; no tool trace. ABIs are verified against the deployed bytecode by the RUNBOOK (online step, RPC).",
   "licences_autorisees": [
     "AGPL-3.0",
@@ -174,7 +174,7 @@
       "licence": "data"
     },
     "deployments/fx-corridor.json": {
-      "sha256": "908bfe5aa5b334ff2e3298325a30f488326ef66190647927b3f193e3aaa2e20c",
+      "sha256": "ae1ed3f38260468d831954e026312e8f3400e63b077505e9154623c8e8993dde",
       "licence": "data"
     },
     "deployments/hoodi-reference.json": {
