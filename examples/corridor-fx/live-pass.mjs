@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 // VIVANTE (live) passes of the FX corridor on Sepolia and Arbitrum Sepolia, after the hardening of 2026-10-18.
 //
-// node examples/corridor-fx/live-pass.mjs fonds     [--amount 1000]   prepare: arrival reserve, payer's holdings
-// node examples/corridor-fx/live-pass.mjs conforme  [--amount 1000]   wrap, conditioned send, lock, exchange, delivery, unwrap
-// node examples/corridor-fx/live-pass.mjs refus     [--amount 1000]   beneficiary without credential: refused AT THE SOURCE
-// node examples/corridor-fx/live-pass.mjs retour    [--amount 1000]   residual case: refused at arrival, then funds returned
-// node examples/corridor-fx/live-pass.mjs agent     [--amount 1000]   compliant pass paid by the agent under FI FR's mandate (vLEI)
-// node examples/corridor-fx/live-pass.mjs refus-vlei                   the payer presents a REVOKED OOR: no attestation, nothing is sent
+// node examples/corridor-fx/live-pass.mjs funds      [--amount 1000]   prepare: arrival reserve, payer's plain EURX for two passes
+// node examples/corridor-fx/live-pass.mjs compliant  [--amount 1000]   wrap, conditioned send, lock, exchange, delivery, unwrap
+// node examples/corridor-fx/live-pass.mjs refusal    [--amount 1000]   beneficiary without credential: refused AT THE SOURCE
+// node examples/corridor-fx/live-pass.mjs return     [--amount 1000]   residual case: refused at arrival, then funds returned
+// node examples/corridor-fx/live-pass.mjs agent      [--amount 1000]   compliant pass paid by the agent under FI FR's mandate (vLEI)
+// node examples/corridor-fx/live-pass.mjs refusal-vlei                  the payer presents a REVOKED OOR: no attestation, nothing is sent
 // node examples/corridor-fx/live-pass.mjs agent-out-of-mandate [--amount 300000]  beyond the mandate ceiling: refused before any send
-// node examples/corridor-fx/live-pass.mjs vol                          FI SG2 presents FI FR's attestation: runFor refuses, nothing is sent
-// node examples/corridor-fx/live-pass.mjs contrepartie-inattendue      the payer expects a different LEI: KYC_CP refuses before any send
-// --dry   (default) reads, computes, prints the plan and the balances, writes nothing
+// node examples/corridor-fx/live-pass.mjs theft                         FI SG2 presents FI FR's attestation: runFor refuses, nothing is sent
+// node examples/corridor-fx/live-pass.mjs unexpected-counterparty       the payer expects a different LEI: KYC_CP refuses before any send
+// The sanctions and attestation refusals (refusal-sanctions, refusal-bit, refusal-key-source, refusal-signature-source,
+// refusal-root-stale) and replay: run without a mode for the full usage line.
+// --dry   (default) reads, computes, prints the plan and the balances, writes nothing; it refuses a pass whose wrap
+//         the payer's plain EURX cannot fund (wrap-guard.mjs), which --execute would see as a reverted depositFor
 // --execute        broadcasts (testnet demos only; simulate first = run without --execute). The vLEI refusal modes
-// (refus-vlei, agent-out-of-mandate, vol, contrepartie-inattendue) NEVER broadcast: --execute there only writes
+// (refusal-vlei, agent-out-of-mandate, theft, unexpected-counterparty) NEVER broadcast: --execute there only writes
 // their result file.
 //
 // vLEI (2026-10-22), active as soon as the tracer carries VleiAttestationPolicy on BOTH chains; without it, everything is unchanged.
@@ -30,8 +33,8 @@
 // Everything is READ: addresses from the tracer `fx-corridor.json`, chain balances and events, Policy Manager checks.
 // Keys sourced by NAME (DEPLOYER_PRIVATE_KEY, BANK_FR_PRIVATE_KEY, BANK_SG1_PRIVATE_KEY, NODE_DEMO_KEY) in .env.local
 // at the repository root (or PC_ENV_DIR from a worktree), never printed. Sends go through txutil.mjs.
-// Output: live-result.json (conforme), live-result-refusal.json (refusal at the source), live-result-return.json (return),
-// live-result-<mode>.json for agent, refus-vlei, agent-out-of-mandate, vol and contrepartie-inattendue.
+// Output: live-result.json (compliant), live-result-refusal.json (refusal at the source), live-result-return.json (return),
+// and for the other modes the live-result-<name>.json each one prints as "written".
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -43,6 +46,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, existsSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { fournisseur, avecEssais, envoyer } from './txutil.mjs';
+import { eurxDuWrap, eurxPourDeuxPasses, refusWrap } from './wrap-guard.mjs';
 import { attester as attesterVlei, PROOF_ABI, POLICY_ABI as VLEI_ABI, partie as partieVlei, cleLei } from '../../vlei/attester/attester.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -467,9 +471,8 @@ async function modeFonds(c) {
   const manque = besoinReserve > avant.arrival_reserve_EURX ? besoinReserve - avant.arrival_reserve_EURX : 0n;
   log(`arrival reserve at ${fmt(avant.arrival_reserve_EURX)} EURX, target ${fmt(besoinReserve)} : mint de ${fmt(manque)}`);
   log(`payer holdings: ${fmt(avant.payer_EURX)} plain EURX and ${fmt(avant.payer_wEURX)} wEURX; the pass wraps ${fmt(MONTANT)} itself`);
-  const nuNecessaire = MONTANT * 2n;
-  const manqueNu = nuNecessaire > avant.payer_EURX + avant.payer_wEURX ? nuNecessaire - avant.payer_EURX - avant.payer_wEURX : 0n;
-  log(`plain EURX to mint for the payer (two passes): ${fmt(manqueNu)}`);
+  const manqueNu = eurxPourDeuxPasses({ montant: MONTANT, eurx: avant.payer_EURX, weurx: avant.payer_wEURX });
+  log(`plain EURX to mint for the payer (a compliant pass, then a return pass): ${fmt(manqueNu)}`);
   if (!EXECUTE) return log('--dry : nothing is written');
   if (manque > 0n) await envoyer(c.deployerArb, 'arbitrum', { to: c.eurxArb.target, data: c.eurxArb.interface.encodeFunctionData('mint', [c.d.RECV_ADAPTER_EUR, manque]) }, { label: 'mint of the arrival reserve' });
   if (manqueNu > 0n) await envoyer(c.deployerSep, 'sepolia', { to: c.eurxSep.target, data: c.eurxSep.interface.encodeFunctionData('mint', [c.payer, manqueNu]) }, { label: 'mint of the payer EURX' });
@@ -510,6 +513,14 @@ async function jambesArrivee(c, hash) {
   return { hash, block: recu.blockNumber, status: recu.status, events: evs };
 }
 
+/** Refuses, in --dry as in --execute, a pass whose wrap the payer cannot fund (wrap-guard.mjs): a reverted depositFor
+ *  on Sepolia is not what a pass shows. `toutEnvelopper`: the compliant pass wraps the whole amount. */
+async function exigerEurxDuWrap(c, montant, { toutEnvelopper = false, lus = null } = {}) {
+  const s = lus || await soldes(c);
+  const { besoin, manque } = eurxDuWrap({ montant, eurx: s.payer_EURX, weurx: s.payer_wEURX, toutEnvelopper });
+  if (manque > 0n) throw new Error(refusWrap(fmt(s.payer_EURX), fmt(besoin)));
+}
+
 /** Wraps whatever is missing so the payer holds `montant` in wEURX: a refusal must be explained by the guard, never by an empty balance. */
 async function assurerWrap(c, montant) {
   const wP = c.wSrc.connect(c.walletPayeur), eP = c.eurxSep.connect(c.walletPayeur);
@@ -538,6 +549,7 @@ async function modeConforme(c, { partiePayeur = c.vleiPartiePayeur, fichier = 'l
   }
   const avant = await soldes(c);
   log(JSON.stringify(lisible(avant), null, 2));
+  await exigerEurxDuWrap(c, MONTANT, { toutEnvelopper: true, lus: avant });
   if (!EXECUTE) return log('--dry : nothing is written');
 
   const res = { schema: 2, pass: passe, amount_eur: fmt(MONTANT), route, direct_quote: fmt(direct), pivot_quote: fmt(pivot), expected_applied_rate: taux, reference_sgd_per_eur: ref, gap_to_reference_bps: Number(ecartBps.toFixed(2)), min_out: fmt(minOut), balances_before: lisible(avant), legs: [] };
@@ -684,6 +696,7 @@ async function modeRefus(c) {
   const dstAtt = await attArrivee(c, uetr, c.benef, minOut, maxOut, ts, [], vleiSg1 ? vleiSg1.proof : null); // signed for BANK_SG1, presented for `inconnu`
   const composeMsg = route === 0 ? await c.composer.composePayloadFor(inconnu, minOut, maxOut, dstAtt) : await c.composer.composePayloadForRoute(inconnu, minOut, 1, maxOut, dstAtt);
   const p = param(c, composeMsg, MONTANT);
+  await exigerEurxDuWrap(c, MONTANT);
   if (EXECUTE) { const rw = await assurerWrap(c, MONTANT); if (rw) log(`prior wrap ${rw.hash}: the payer holds ${fmt(MONTANT)} wEURX, so a refusal cannot be explained by an empty balance`); }
   const avant = await soldes(c);
   log(JSON.stringify(lisible(avant), null, 2));
@@ -746,6 +759,7 @@ async function modeRetour(c) {
     afficherKyc(kyc);
     if (!kyc.ok) throw new Error(`${kyc.reason} ; no transaction`);
   }
+  await exigerEurxDuWrap(c, MONTANT);
   if (EXECUTE) { const rw = await assurerWrap(c, MONTANT); if (rw) log(`wrap prealable ${rw.hash}`); }
   const avant = await soldes(c);
   log(JSON.stringify(lisible(avant), null, 2));
@@ -852,6 +866,7 @@ async function modeRefusSanctions(c) {
   const dstAtt = await attArriveeControlee(c, uetr, c.benef, minOut, maxOut, ts);
   const composeMsg = route === 0 ? await c.composer.composePayloadFor(c.benef, minOut, maxOut, dstAtt) : await c.composer.composePayloadForRoute(c.benef, minOut, 1, maxOut, dstAtt);
   const p = param(c, composeMsg, MONTANT);
+  await exigerEurxDuWrap(c, MONTANT);
   if (EXECUTE) { const rw = await assurerWrap(c, MONTANT); if (rw) log(`wrap prealable ${rw.hash}`); }
   const avant = await soldes(c);
   const pre = await precontroleZk(c, 'sepolia', { subject: c.wSrc.target, from: c.payer, to: c.adapter.target, montant: MONTANT, contexte: srcAtt });
@@ -912,6 +927,7 @@ async function modeRefusBit(c) {
   const dstAtt = await attArriveeControlee(c, uetr, c.benef, minOut, maxOut, ts);
   const composeMsg = route === 0 ? await c.composer.composePayloadFor(c.benef, minOut, maxOut, dstAtt) : await c.composer.composePayloadForRoute(c.benef, minOut, 1, maxOut, dstAtt);
   const p = param(c, composeMsg, MONTANT);
+  await exigerEurxDuWrap(c, MONTANT);
   if (EXECUTE) { const rw = await assurerWrap(c, MONTANT); if (rw) log(`wrap prealable ${rw.hash}`); }
   const avant = await soldes(c);
   const pre = await precontroleZk(c, 'sepolia', { subject: c.wSrc.target, from: c.payer, to: c.adapter.target, montant: MONTANT, contexte: srcAtt });
@@ -944,6 +960,7 @@ async function modeRejeu(c) {
   const dstAtt = await attArriveeControlee(c, uetr, c.benef, minOut, maxOut, ts);
   const composeMsg = route === 0 ? await c.composer.composePayloadFor(c.benef, minOut, maxOut, dstAtt) : await c.composer.composePayloadForRoute(c.benef, minOut, 1, maxOut, dstAtt);
   const p = param(c, composeMsg, MONTANT);
+  await exigerEurxDuWrap(c, MONTANT);
   if (EXECUTE) { const rw = await assurerWrap(c, MONTANT); if (rw) log(`wrap prealable ${rw.hash}`); }
   const avant = await soldes(c);
   const pre = await precontroleZk(c, 'sepolia', { subject: c.wSrc.target, from: c.payer, to: c.adapter.target, montant: MONTANT, contexte: srcAtt });
@@ -978,6 +995,7 @@ async function modeRefusCleSource(c) {
   const dstAtt = await attArriveeControlee(c, uetr, c.benef, minOut, maxOut, ts);
   const composeMsg = route === 0 ? await c.composer.composePayloadFor(c.benef, minOut, maxOut, dstAtt) : await c.composer.composePayloadForRoute(c.benef, minOut, 1, maxOut, dstAtt);
   const p = param(c, composeMsg, MONTANT);
+  await exigerEurxDuWrap(c, MONTANT);
   if (EXECUTE) { const rw = await assurerWrap(c, MONTANT); if (rw) log(`wrap prealable ${rw.hash}`); }
   const avant = await soldes(c);
   const preAvant = await precontroleZk(c, 'sepolia', { subject: c.wSrc.target, from: c.payer, to: c.adapter.target, montant: MONTANT, contexte: srcAtt });
@@ -1027,6 +1045,7 @@ async function modeRefusSignatureSource(c) {
   const dstAtt = await attArriveeControlee(c, uetr, c.benef, minOut, maxOut, ts);
   const composeMsg = route === 0 ? await c.composer.composePayloadFor(c.benef, minOut, maxOut, dstAtt) : await c.composer.composePayloadForRoute(c.benef, minOut, 1, maxOut, dstAtt);
   const p = param(c, composeMsg, MONTANT);
+  await exigerEurxDuWrap(c, MONTANT);
   if (EXECUTE) { const rw = await assurerWrap(c, MONTANT); if (rw) log(`wrap prealable ${rw.hash}`); }
   const avant = await soldes(c);
   if (!EXECUTE) return log('--dry : nothing is written');
@@ -1067,6 +1086,7 @@ async function modeRefusRacinePerimee(c) {
   const dstAtt = await attArriveeControlee(c, uetr, c.benef, minOut, maxOut, ts);
   const composeMsg = route === 0 ? await c.composer.composePayloadFor(c.benef, minOut, maxOut, dstAtt) : await c.composer.composePayloadForRoute(c.benef, minOut, 1, maxOut, dstAtt);
   const p = param(c, composeMsg, MONTANT);
+  await exigerEurxDuWrap(c, MONTANT);
   if (EXECUTE) { const rw = await assurerWrap(c, MONTANT); if (rw) log(`wrap prealable ${rw.hash}`); }
   const avant = await soldes(c);
   const pre = await precontroleZk(c, 'sepolia', { subject: c.wSrc.target, from: c.payer, to: c.adapter.target, montant: MONTANT, contexte: srcAtt });
