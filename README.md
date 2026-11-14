@@ -6,6 +6,42 @@ source of that layer, its tests, the exported ABIs, the on-chain deployment trac
 the upstream projects (Chainlink ACE, GLEIF vLEI, LayerZero). It is meant to be read, compiled and verified by
 institutional counterparties.
 
+## The demonstration
+
+`media/Cross-chain programmable compliance demonstration.mp4` (3:15) shows the toolkit on a payment that is cross-border,
+cross-currency and cross-chain: 1000 EURX, a euro token, from a French financial institution to one in Singapore, on two test
+networks connected by LayerZero.
+
+- Each institution performs its own checks. The data stays with the institution; only the proof is shared.
+- Before any value moves, each institution checks who is on the other side with a verifiable LEI credential (vLEI): which
+  institution, who may act for it, and whether this wallet is theirs. The credentials are test credentials under a test root,
+  not GLEIF's.
+- Just before the payment, a verifier checks each credential and its status and signs an attestation bound to this payment.
+  The ledger checks that signature, accepts it for one hour, and only once.
+- The paying institution signs the transaction and attaches a proof that the party is not on the demo sanctions list. The
+  chain does not screen any party: the institution screens, and the ledger checks the proof.
+- On each ledger the Policy Wrapper holds the token and one proof per check; its Policy Manager verifies each proof before the
+  token moves. The token is locked, and a LayerZero message carries its compliance passport to the other ledger; two
+  independent networks, LayerZero's DVNs, must both confirm the message. The wrapper on the arrival ledger checks the
+  passport's proofs against its own rules, verifies the payee, then delivers. Each ledger records the credential it relied upon.
+- If the counterparty is on a sanctions list, no proof can be made and nothing moves. The same outcome applies to a party
+  without a credential, a revoked credential, an agent beyond its mandate, someone else's attestation, or a replay.
+- Project SIMFONIA proposes interoperable trust lists of recognised issuers, and supervisory confirmation that firms may rely
+  on verified credentials. Credentials support each institution's compliance checks. They do not replace them.
+
+The film's figures come from the compliant pass of 2026-11-13, `examples/corridor-fx/live-result-2026-11-13-compliant.json`:
+1000 EURX delivered as 1433.03 SGDX through the USD pivot, at 1.4330 SGD per EUR. The lock (Sepolia block 12127496) and the
+mint on the arrival ledger (Arbitrum Sepolia block 328890232, transaction
+`0x65496eaf98ae14132fbe145b303b4fbea319aeb6aa2d5a376044bde17b48143e`) are 80 seconds apart, by their block times. The
+refusals of the same day sent no transaction and moved no funds: `live-result-2026-11-13-refusal-vlei.json` (a revoked
+credential), `live-result-2026-11-13-agent-out-of-mandate.json` (an agent beyond its mandate) and
+`live-result-2026-11-13-theft.json` (someone else's attestation). The required DVNs are read from the chain by
+`node scripts/demo/wiring-check.mjs` (`deployments/fx-corridor.json`).
+
+The map of the demonstration, `https://gl1-pc.shared-ledger.eu/concept/corridor`, replays recorded passes for anyone; a live
+pass is started from the platform by a signed-in operator. Both read the contracts of `deployments/fx-corridor.json`. All of
+this runs on test networks, with a demo sanctions list and test credentials.
+
 ## Build and test in five minutes
 
 Offline, no key, no network after the clone. It needs [Foundry](https://getfoundry.sh) and Node 18 or later.

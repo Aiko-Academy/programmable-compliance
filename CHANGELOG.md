@@ -1,5 +1,12 @@
 # Changelog of the pack
 
+## Demonstration material (2026-11-14)
+
+- `media/Cross-chain programmable compliance demonstration.mp4` (3:15), and a README section on what it shows.
+- `examples/corridor-fx/live-result-2026-11-13-*.json`: the compliant pass behind the film's figures and three refusals of the
+  same day (revoked credential, agent beyond its mandate, someone else's attestation), nothing sent for the refusals.
+- The pack version is unchanged (0.1.1): no contract, ABI or tracker changed.
+
 ## 0.1.1 (2026-09-14)
 
 - `PolicyWrapper` emits `Paused` and `Unpaused`; a service can read them as evidencing records.

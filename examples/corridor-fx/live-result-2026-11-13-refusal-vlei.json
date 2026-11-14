@@ -1,0 +1,106 @@
+{
+  "schema": 3,
+  "pass": "refusal-vlei-revoked-oor",
+  "amount_eur": "1000.0",
+  "uetr": "0xa57c9e4d2293fecf595dee25e17b952d",
+  "submitted_transaction": false,
+  "vlei": {
+    "warning": "pinned TEST root (not GLEIF), fictional LEIs prefixed DEMO",
+    "source_policy": "0x76D62740b6109b7F45249053aa70d51eF83D5280",
+    "attester": "0x87aa85fc706B9DFe39482787edc4450dCd9C0CD6",
+    "payer_revoked_oor": {
+      "party": "fi-fr-ancien-revoque",
+      "signed": false,
+      "lei": "DEMO00FIFRPAYER00119",
+      "expectedLei": "DEMO00FIFRPAYER00119",
+      "role": "OOR",
+      "roleTitle": "Head of Operations",
+      "credentialSaid": "EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB",
+      "holderAid": "EHCLQvpK1EXD6nuiPFHgiO-_5rzdyfVggbmwTKLg9g3k",
+      "pinnedRoot": "EN1XCUaHSyD1jyL2KE_CaSw5teI2KHtQqE_8f-X8P-vQ",
+      "telStatus": "revoked",
+      "checkedAt": "2026-11-13T17:54:48Z",
+      "presentation": {
+        "verdict": false,
+        "reasons": [
+          "EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR): revoked"
+        ]
+      },
+      "binding": {
+        "verdict": false,
+        "reasons": [
+          "holder signature KERI: OOR presentation refused: EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR): revoked"
+        ],
+        "address": "0x7C0984484391D6cD7bFc68d12D1fD3c48f1BbB38",
+        "validUntil": 1795221635
+      },
+      "reasons": [
+        "presentation: EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR): revoked",
+        "wallet attachment: holder signature KERI: OOR presentation refused: EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR): revoked"
+      ]
+    },
+    "kyc_cp": {
+      "by_fi_sg1_on_fi_fr": {
+        "check": "FI SG1 node, before signing its arrival attestation : payer's vLEI presentation (OOR, or mandate and granter's OOR), wallet linkage, expected LEI",
+        "party": "fi-fr-ancien-revoque",
+        "presented_lei": "DEMO00FIFRPAYER00119",
+        "expected_lei": "DEMO00FIFRPAYER00119",
+        "role": "OOR",
+        "roleTitle": "Head of Operations",
+        "verdict": false,
+        "reasons": [
+          "presentation: EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR): revoked",
+          "wallet attachment: holder signature KERI: OOR presentation refused: EBxiSi8AGpcE8dEMfNMU8ylau-U58-2NQLzKbYaWUHmB (OOR): revoked"
+        ],
+        "telStatus": "revoked",
+        "checkedAt": "2026-11-13T17:54:48Z"
+      }
+    },
+    "precheck_without_proof": {
+      "source": "PolicyRejected(VleiAttestationPolicy: no vLEI attestation supplied)"
+    },
+    "holder_in_office_control": {
+      "party": "fi-fr-payeur",
+      "signed": true,
+      "telStatus": "issued",
+      "runFor_source": "Continue"
+    }
+  },
+  "balances_before": {
+    "time": "2026-11-13T17:54:47.207Z",
+    "payer_wEURX": "1000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "22500.0",
+    "supply_wEURX_source": "1000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "67177.127043461480139225",
+    "pool_SGDX": "91257.580818859589657383",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "34999.482881366055799068",
+    "composer_wEURX": "0.0",
+    "eurusd_EURX": "88183.843380092847480403",
+    "eurusd_USDX": "96328.034268521947525768",
+    "usdsgd_USDX": "77760.790466346847229045",
+    "usdsgd_SGDX": "95629.318724851716953184"
+  },
+  "balances_after": {
+    "time": "2026-11-13T17:54:51.903Z",
+    "payer_wEURX": "1000.0",
+    "payer_EURX": "0.0",
+    "adapter_lock_EURX": "22500.0",
+    "supply_wEURX_source": "1000.0",
+    "arrival_reserve_EURX": "1000.0",
+    "pool_EURX": "67177.127043461480139225",
+    "pool_SGDX": "91257.580818859589657383",
+    "beneficiary_wSGDX": "0.0",
+    "beneficiary_SGDX": "34999.482881366055799068",
+    "composer_wEURX": "0.0",
+    "eurusd_EURX": "88183.843380092847480403",
+    "eurusd_USDX": "96328.034268521947525768",
+    "usdsgd_USDX": "77760.790466346847229045",
+    "usdsgd_SGDX": "95629.318724851716953184"
+  },
+  "no_funds_moved": true,
+  "expected_result": true,
+  "measured_at": "2026-11-13T17:54:53.243Z"
+}
